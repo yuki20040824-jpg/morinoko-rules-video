@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>もりノコ｜子ども向けルール動画</title>
+<style>
+:root{
+  --ink:#22201b;
+  --paper:#fff8e9;
+  --white:#fffef8;
+  --green:#39a85a;
+  --green-soft:#dff3df;
+  --blue:#4da6c8;
+  --blue-soft:#e3f3fb;
+  --yellow:#f1c94d;
+  --yellow-soft:#fff2b8;
+  --red:#df5a42;
+  --red-soft:#ffe0d8;
+  --brown:#8d603d;
+  --shadow:5px 5px 0 var(--ink);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{
+  color:var(--ink);
+  background:
+    linear-gradient(90deg, rgba(57,168,90,.13) 0 3px, transparent 3px 70px),
+    linear-gradient(0deg, rgba(77,166,200,.10) 0 3px, transparent 3px 70px),
+    var(--paper);
+  font-family:"Hiragino Maru Gothic ProN","Yu Gothic",system-ui,sans-serif;
+  display:flex;
+  flex-direction:column;
+}
+button{font-family:inherit}
+.progress{
+  height:10px;
+  background:var(--white);
+  border-bottom:3px solid var(--ink);
+  flex:none;
+}
+.bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--green),var(--yellow),var(--blue));
+  transition:width .12s linear;
+}
+.stage{
+  position:relative;
+  flex:1;
+  min-height:0;
+  overflow:hidden;
+}
+.slide{
+  position:absolute;
+  inset:16px;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  gap:12px;
+  opacity:0;
+  transform:translateX(28px) scale(.985);
+  transition:opacity .38s ease, transform .38s ease;
+  pointer-events:none;
+}
+.slide.active{
+  opacity:1;
+  transform:translateX(0) scale(1);
+  pointer-events:auto;
+}
+.head{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:14px;
+  max-width:1120px;
+  width:100%;
+  margin:0 auto;
+}
+.mascot{
+  width:66px;
+  max-height:88px;
+  object-fit:contain;
+  filter:drop-shadow(3px 3px 0 rgba(34,32,27,.95));
+}
+.kicker{
+  font-size:.8rem;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:var(--green);
+}
+.title{
+  margin:2px 0 0;
+  font-size:clamp(1.55rem, 3.8vw, 3.25rem);
+  line-height:1.08;
+  letter-spacing:0;
+  font-weight:900;
+}
+.scene-no{
+  min-width:68px;
+  text-align:center;
+  font-weight:900;
+  border:3px solid var(--ink);
+  background:var(--yellow-soft);
+  border-radius:999px;
+  padding:7px 10px;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.visual{
+  width:100%;
+  max-width:1120px;
+  min-height:0;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.caption-box{
+  max-width:960px;
+  width:100%;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.caption{
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:16px;
+  box-shadow:4px 4px 0 var(--ink);
+  padding:11px 18px;
+  font-size:clamp(1rem, 2vw, 1.3rem);
+  line-height:1.55;
+  font-weight:800;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity .42s ease, transform .42s ease;
+}
+.caption.show{opacity:1;transform:translateY(0)}
+.caption.hot{background:var(--yellow-soft)}
+.step{
+  opacity:0;
+  transform:translateY(16px) rotate(-1deg);
+  transition:opacity .45s ease, transform .45s ease;
+}
+.step.show{opacity:1;transform:translateY(0) rotate(0)}
+.sticker{
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.board-wrap{
+  position:relative;
+  width:min(92vw,72vh,780px);
+  height:auto;
+  max-width:92vw;
+  aspect-ratio:1448/1086;
+  margin:auto;
+}
+.board{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:drop-shadow(5px 5px 0 rgba(34,32,27,.9));
+}
+.state-on-board{
+  position:absolute;
+  left:47%;
+  top:20%;
+  width:34%;
+  transform:translate(-50%,-50%);
+  border-radius:10px;
+  filter:drop-shadow(3px 3px 0 rgba(34,32,27,.8));
+}
+.turn-card{
+  position:absolute;
+  left:80%;
+  top:19%;
+  width:13%;
+  transform:translate(-50%,-50%);
+  border-radius:8px;
+  filter:drop-shadow(3px 3px 0 rgba(34,32,27,.75));
+}
+.board-tag{
+  position:absolute;
+  font-size:clamp(.7rem,1.3vw,.95rem);
+  font-weight:900;
+  color:var(--ink);
+  background:var(--white);
+  border:2px solid var(--ink);
+  border-radius:999px;
+  padding:2px 9px;
+  transform:translate(-50%,-50%);
+  white-space:nowrap;
+}
+.board-tag.state{left:47%;top:38%}
+.board-tag.turn{left:80%;top:33%}
+.round-add{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(14px,3vw,34px);
+  flex-wrap:wrap;
+  width:min(96vw,1080px);
+}
+.round-add .board-wrap{width:min(58vw,56vh,540px);margin:0}
+.add-badge{
+  position:absolute;
+  min-width:32px;
+  text-align:center;
+  font-weight:900;
+  font-size:clamp(.8rem,1.5vw,1.1rem);
+  color:var(--white);
+  border:2px solid var(--ink);
+  border-radius:999px;
+  padding:2px 8px;
+  box-shadow:2px 2px 0 var(--ink);
+  transform:translate(-50%,-50%);
+}
+.add-badge.wood{background:var(--green);left:26%;top:55%}
+.add-badge.water{background:var(--blue);left:50%;top:57%}
+.add-badge.soil{background:var(--brown);left:74%;top:55%}
+.round-note{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:16px 18px;
+  min-width:min(90vw,246px);
+}
+.round-note .note-title{font-weight:900;font-size:clamp(1rem,1.8vw,1.2rem);text-align:center}
+.cmp-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:900;
+  font-size:clamp(.9rem,1.6vw,1.1rem);
+  line-height:1.35;
+  border:2px solid var(--ink);
+  border-radius:14px;
+  padding:8px 10px;
+  background:var(--green-soft);
+}
+.cmp-row.tired{background:var(--red-soft)}
+.mini-state{
+  width:clamp(72px,10vw,104px);
+  aspect-ratio:288/170;
+  object-fit:contain;
+  border-radius:8px;
+  border:2px solid var(--ink);
+  flex:none;
+}
+.down1{color:var(--red)}
+.place-demo{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(18px,4vw,52px);
+  flex-wrap:wrap;
+  width:min(94vw,940px);
+}
+.place-card-wrap{
+  position:relative;
+  height:min(42vh,340px);
+  max-width:44vw;
+  aspect-ratio:650/1075;
+}
+.place-card-wrap .card-img{width:100%;height:100%}
+.drop-slot{position:absolute;width:18%;transform:translate(-50%,-50%)}
+.drop-slot.d1{left:31%;top:66%}
+.drop-slot.d2{left:50%;top:66%}
+.drop-slot.d3{left:69%;top:66%}
+.drop-token{
+  width:100%;
+  aspect-ratio:1;
+  object-fit:contain;
+  filter:drop-shadow(2px 2px 0 rgba(34,32,27,.55));
+}
+.drop-token.step{transform:translateY(-42px) scale(1.18)}
+.drop-token.step.show{transform:translateY(0) scale(1)}
+.place-guide{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  padding:16px 20px;
+}
+.recover-flow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(14px,3vw,36px);
+  flex-wrap:wrap;
+  width:min(96vw,1060px);
+}
+.recover-flow .board-wrap{width:min(50vw,46vh,460px);margin:0}
+.recover-side{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  align-items:center;
+}
+.recover-card-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+}
+.recover-card-box .card-img{width:clamp(64px,7vw,92px)}
+.get-one{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:10px 14px;
+  min-width:min(88vw,222px);
+}
+.get-choice{display:flex;gap:10px}
+.get-choice img{
+  width:clamp(30px,4vw,42px);
+  aspect-ratio:1;
+  object-fit:contain;
+  filter:drop-shadow(2px 2px 0 rgba(34,32,27,.55));
+}
+.hex-token{
+  position:absolute;
+  width:5.8%;
+  aspect-ratio:1;
+  filter:drop-shadow(2px 2px 0 rgba(34,32,27,.55));
+}
+.wood-zone{left:16%;top:60%}
+.water-zone{left:46%;top:62%}
+.soil-zone{left:74%;top:60%}
+.hex-token.small-token{width:8%}
+.zone-token{opacity:1}
+.zone-token.show{opacity:.15}
+.resource-label{
+  position:absolute;
+  font-size:clamp(.8rem,1.4vw,1.05rem);
+  font-weight:900;
+  background:var(--white);
+  border:2px solid var(--ink);
+  border-radius:999px;
+  padding:3px 10px;
+}
+.resource-label.wood{left:16%;top:47%}
+.resource-label.water{left:45%;top:48%}
+.resource-label.soil{left:74%;top:47%}
+.state-tile{
+  width:clamp(185px,24vw,290px);
+  aspect-ratio:288/170;
+  object-fit:contain;
+  border-radius:18px;
+  filter:drop-shadow(4px 4px 0 rgba(34,32,27,.75));
+}
+.table{
+  width:min(92vw,980px);
+  min-height:360px;
+  padding:24px;
+  background:var(--green-soft);
+  border:3px solid var(--ink);
+  border-radius:28px;
+  box-shadow:var(--shadow);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:22px;
+  flex-wrap:wrap;
+}
+.card-img{
+  width:clamp(92px, 13vw, 160px);
+  aspect-ratio:650/1075;
+  object-fit:contain;
+  border-radius:10px;
+  filter:drop-shadow(4px 4px 0 rgba(34,32,27,.85));
+}
+.card-img.big{width:clamp(130px, 18vw, 218px)}
+.card-img.small{width:clamp(68px, 9vw, 106px)}
+.card-row{
+  display:flex;
+  gap:12px;
+  align-items:flex-end;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.choice-pack{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+  align-items:center;
+  justify-items:center;
+}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:34px;
+  padding:7px 13px;
+  font-weight:900;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.resource-line{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.res{
+  width:40px;
+  height:40px;
+  object-fit:contain;
+  filter:drop-shadow(2px 2px 0 rgba(34,32,27,.6));
+}
+.res.small{width:30px;height:30px}
+.take-layout{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:18px;
+  width:min(94vw,940px);
+}
+.person{
+  min-width:190px;
+  padding:14px;
+  text-align:center;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+}
+.person-name{
+  font-size:1.15rem;
+  font-weight:900;
+  margin:0 0 8px;
+}
+.card-pad{
+  min-height:78px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  border:3px dashed var(--ink);
+  border-radius:14px;
+  background:var(--yellow-soft);
+}
+.arrow{
+  font-size:clamp(2rem,5vw,4rem);
+  font-weight:900;
+}
+.state-flow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+  flex-wrap:wrap;
+}
+.state-card{
+  display:grid;
+  justify-items:center;
+  gap:10px;
+}
+.state-card img{width:clamp(125px,17vw,190px)}
+.state-card.tired .pill{background:var(--red-soft)}
+.state-card.healthy .pill{background:var(--green-soft)}
+.plus-box{
+  display:grid;
+  gap:10px;
+  padding:18px;
+  background:var(--blue-soft);
+}
+.make-grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(110px, 1fr));
+  gap:16px;
+  width:min(92vw,860px);
+}
+.make-item{
+  display:grid;
+  justify-items:center;
+  gap:6px;
+  padding:12px 8px;
+}
+.make-item img{width:min(100%,130px)}
+.points{
+  color:var(--green);
+  font-weight:900;
+  font-size:1.15rem;
+}
+.result-panels{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  width:min(92vw,920px);
+}
+.result-panel{
+  padding:20px;
+  min-height:260px;
+  display:grid;
+  align-content:center;
+  justify-items:center;
+  gap:12px;
+  text-align:center;
+}
+.result-panel.ok{background:var(--green-soft)}
+.result-panel.bad{background:var(--red-soft)}
+.result-panel img{width:clamp(110px,17vw,175px)}
+.large-word{
+  font-size:clamp(1.7rem,4vw,3rem);
+  line-height:1.15;
+  font-weight:900;
+}
+.controls{
+  flex:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:10px 12px;
+  background:var(--white);
+  border-top:3px solid var(--ink);
+  flex-wrap:wrap;
+}
+.ctrl{
+  min-width:82px;
+  min-height:40px;
+  border:3px solid var(--ink);
+  border-radius:12px;
+  background:var(--white);
+  box-shadow:3px 3px 0 var(--ink);
+  color:var(--ink);
+  font-size:.95rem;
+  font-weight:900;
+  cursor:pointer;
+}
+.ctrl:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.ctrl.primary{background:var(--green);color:#fff}
+.dots{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  justify-content:center;
+  max-width:320px;
+}
+.dot{
+  width:11px;
+  height:11px;
+  border:2px solid var(--ink);
+  background:var(--white);
+  border-radius:999px;
+  cursor:pointer;
+}
+.dot.active{width:24px;background:var(--yellow)}
+.count{
+  min-width:76px;
+  text-align:center;
+  font-weight:900;
+}
+.moving-res{
+  animation:hop 1.2s ease-in-out infinite;
+}
+@keyframes hop{
+  0%,100%{transform:translateY(0) rotate(-3deg)}
+  50%{transform:translateY(-10px) rotate(3deg)}
+}
+/* --- 横取り強調 --- */
+.steal-mid{
+  display:grid;
+  justify-items:center;
+  gap:6px;
+}
+.grab-hand{
+  font-size:clamp(2.2rem,6vw,3.6rem);
+  animation:grab 1s ease-in-out infinite;
+}
+@keyframes grab{
+  0%,100%{transform:translateX(-9px) rotate(-10deg)}
+  50%{transform:translateX(9px) rotate(10deg)}
+}
+.card-pad.steal-from{position:relative;border-color:var(--red);background:var(--red-soft)}
+.taken-stamp{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(223,90,66,.86);
+  color:#fff;
+  font-weight:900;
+  font-size:1.05rem;
+  border-radius:12px;
+  transform:rotate(-8deg);
+}
+.card-pad.steal-to{
+  flex-direction:column;
+  gap:6px;
+  border-color:var(--green);
+  background:var(--green-soft);
+}
+.pill.got{background:var(--green);color:#fff}
+.round-flow{
+  width:min(96vw,980px);
+  display:grid;
+  grid-template-columns:1fr minmax(260px,.9fr) 1fr;
+  gap:14px;
+  align-items:center;
+  justify-items:center;
+}
+.flow-board{
+  position:relative;
+  width:100%;
+  max-width:330px;
+  aspect-ratio:1448/1086;
+}
+.flow-board .board{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:drop-shadow(4px 4px 0 rgba(34,32,27,.75));
+}
+.flow-side{
+  display:grid;
+  gap:12px;
+  width:100%;
+}
+.flow-player{
+  position:relative;
+  min-height:132px;
+  padding:10px;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  grid-template-areas:"name name" "card goods";
+  gap:10px;
+  justify-items:center;
+  align-items:center;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:16px;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.flow-player.you{background:var(--yellow-soft)}
+.flow-player.active{
+  background:var(--green-soft);
+  border-color:var(--green);
+}
+.flow-name{
+  grid-area:name;
+  margin:0;
+  font-weight:900;
+  font-size:.95rem;
+}
+.flow-card{
+  grid-area:card;
+  width:clamp(54px,6vw,72px);
+  aspect-ratio:650/1075;
+  object-fit:contain;
+  border-radius:8px;
+  filter:drop-shadow(3px 3px 0 rgba(34,32,27,.75));
+}
+.taken-goods{
+  grid-area:goods;
+  min-width:112px;
+  min-height:72px;
+  padding:8px;
+  display:grid;
+  align-content:center;
+  justify-items:center;
+  gap:5px;
+  border:3px dashed var(--ink);
+  border-radius:14px;
+  background:var(--yellow-soft);
+}
+.taken-goods .resource-line{gap:3px}
+.taken-goods .res.small{width:24px;height:24px}
+.taken-goods.recovery{
+  min-width:146px;
+  background:var(--green-soft);
+}
+.recovery-lines{
+  display:grid;
+  gap:5px;
+  justify-items:center;
+}
+.recover-plus{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  font-weight:900;
+  color:var(--green);
+}
+.recover-plus .res.small{width:22px;height:22px}
+.recover-pick{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding-top:4px;
+  border-top:2px dashed rgba(34,32,27,.55);
+  font-weight:900;
+}
+.recover-pick .res.small{width:25px;height:25px}
+.take-note{
+  font-size:.78rem;
+  font-weight:900;
+  color:var(--brown);
+}
+.recovery-burst{
+  position:absolute;
+  left:50%;
+  top:47%;
+  transform:translate(-50%,-50%);
+  z-index:3;
+  display:grid;
+  justify-items:center;
+  gap:4px;
+  padding:8px 10px;
+  background:var(--green-soft);
+  border:3px solid var(--ink);
+  border-radius:14px;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.recovery-burst .take-note{color:var(--green)}
+.recovery-burst .resource-line{gap:2px}
+.recovery-burst .res.small{width:24px;height:24px}
+.turn-order{
+  position:absolute;
+  left:50%;
+  top:13%;
+  transform:translate(-50%,-50%);
+  padding:5px 10px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  box-shadow:2px 2px 0 var(--ink);
+  font-weight:900;
+  font-size:.78rem;
+  z-index:2;
+}
+.result-panel .state-tile{width:clamp(170px,23vw,260px)}
+@media (max-width:760px){
+  .slide{inset:10px;gap:8px}
+  .head{grid-template-columns:auto 1fr;gap:10px}
+  .scene-no{display:none}
+  .mascot{width:52px}
+  .table{min-height:300px;padding:16px;gap:12px}
+  .take-layout{grid-template-columns:1fr;gap:10px}
+  .arrow{transform:rotate(90deg)}
+  .make-grid{grid-template-columns:repeat(2,minmax(120px,1fr));gap:10px}
+  .result-panels{grid-template-columns:1fr;gap:10px}
+  .round-flow{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    align-content:center;
+  }
+  .flow-board{
+    grid-column:1/-1;
+    max-width:230px;
+    order:-1;
+  }
+  .flow-side{display:contents}
+  .flow-player{
+    min-height:100px;
+    padding:6px;
+    gap:5px;
+  }
+  .flow-name{font-size:.78rem}
+  .flow-card{width:42px}
+  .taken-goods{
+    min-width:86px;
+    min-height:54px;
+    padding:5px;
+  }
+  .taken-goods .res.small{width:18px;height:18px}
+  .taken-goods.recovery{min-width:100px}
+  .recovery-lines{gap:3px}
+  .recover-plus .res.small,
+  .recover-pick .res.small{width:17px;height:17px}
+  .recovery-burst{
+    padding:5px 7px;
+    top:49%;
+  }
+  .recovery-burst .res.small{width:17px;height:17px}
+  .take-note{font-size:.68rem}
+  .caption{padding:9px 13px}
+  .controls{gap:6px;padding:8px}
+  .ctrl{min-width:66px;font-size:.85rem}
+  .dots{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div id="loader" style="position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--paper)">
+  <img src="カード/mascot.png" alt="" style="width:96px;filter:drop-shadow(3px 3px 0 rgba(34,32,27,.9))">
+  <div style="font-size:1.2rem;font-weight:900;color:var(--ink)">よみこみ中…</div>
+  <div style="width:min(70vw,320px);height:14px;border:3px solid var(--ink);border-radius:999px;background:var(--white);overflow:hidden">
+    <div id="loaderBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--blue));transition:width .2s"></div>
+  </div>
+  <div id="loaderPct" style="font-size:.9rem;font-weight:900;color:var(--ink)">0%</div>
+</div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<main class="stage" id="stage" aria-live="polite"></main>
+<nav class="controls" aria-label="動画操作">
+  <button class="ctrl" id="prevBtn" type="button">前へ</button>
+  <button class="ctrl primary" id="playBtn" type="button">一時停止</button>
+  <button class="ctrl" id="nextBtn" type="button">次へ</button>
+  <button class="ctrl" id="restartBtn" type="button">最初から</button>
+  <div class="count" id="count">1 / 10</div>
+  <div class="dots" id="dots" aria-label="シーン選択"></div>
+</nav>
+
+<script>
+const CARD = 'カード/';
+const IMG = {
+  mascot: CARD + 'mascot.png',
+  board: CARD + 'board.jpg',
+  wood: CARD + 'tokens/wood.png',
+  water: CARD + 'tokens/water.png',
+  soil: CARD + 'tokens/soil.png',
+  n1: CARD + '28.jpg',
+  n2: CARD + '29.jpg',
+  n3: CARD + '30.jpg',
+  n4: CARD + '31.jpg',
+  n5: CARD + '32.jpg',
+  n6: CARD + '33.jpg',
+  recov: CARD + '回復カード/53.jpg',
+  recovWater: CARD + '回復カード/54.jpg',
+  turn1: CARD + 'もりノコ_カード_ターンカード4人以下/34.jpg',
+  healthy: CARD + 'もりノコ_カード/59.jpg',
+  tired: CARD + 'もりノコ_カード/60.jpg',
+  healthyState: CARD + 'state/healthy.jpg',
+  tiredState: CARD + 'state/tired.jpg',
+  warn: CARD + 'もりノコ_カード/61.jpg',
+  chopsticks: CARD + '1.jpg',
+  violin: CARD + '2.jpg',
+  sauna: CARD + '8.jpg',
+  washoku: CARD + '14.jpg',
+  satoyama: CARD + '15.jpg'
+};
+const LINE_GAP = 2200;
+const HOLD_AFTER = 2100;
+const token = (kind, cls='') => `<img class="res ${cls}" src="${IMG[kind]}" alt="${kindLabel(kind)}">`;
+const kindLabel = kind => ({wood:'木',water:'水',soil:'土'})[kind] || kind;
+const tokenLine = list => `<div class="resource-line">${list.map(k => token(k, 'small')).join('')}</div>`;
+const zoneTokens = (zoneClass, kind, takenSteps, offset=18) => takenSteps.map((st,i) => {
+  const cls = st != null ? ' zone-token step' : '';
+  const dataStep = st != null ? ` data-step="${st}"` : '';
+  return `<img class="hex-token ${zoneClass}${cls}" style="transform:translate(${i*offset}px,${(i%2)*offset}px)" src="${IMG[kind]}" alt="${kindLabel(kind)}"${dataStep}>`;
+}).join('');
+
+const SCENES = [
+  {
+    kicker:'はじめに',
+    title:'森のしげんで、くらしをつくろう',
+    captions:[
+      '木・水・土を集めて、「つくるカード」を完成させるゲームです。',
+      'でも、森を使いすぎると、森がつかれてしまいます。'
+    ],
+    visual:`
+      <div class="table">
+        <img class="card-img big step" data-step="0" src="${IMG.mascot}" alt="ゲームのマスコット">
+        <div class="choice-pack step" data-step="1">
+          <div class="card-row">
+            <img class="card-img small" src="${IMG.chopsticks}" alt="箸を使う">
+            <img class="card-img small" src="${IMG.violin}" alt="バイオリンを弾く">
+            <img class="card-img small" src="${IMG.satoyama}" alt="里山でくらす">
+          </div>
+          <div class="pill">点を集める。でも森も守る。</div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'ラウンドのはじめ',
+    title:'森には、木・水・土がある',
+    captions:[
+      'ターンカードに書かれた数だけ、木・水・土を森に追加します。',
+      'つかれた森のときは、追加する数が それぞれ１ずつ へります（＋5→＋4）。'
+    ],
+    visual:`
+      <div class="round-add">
+        <div class="board-wrap step" data-step="0">
+          <img class="board" src="${IMG.board}" alt="森林ボード">
+          <img class="state-on-board" src="${IMG.healthyState}" alt="森の状態カード（元気な森）">
+          <img class="turn-card" src="${IMG.turn1}" alt="ターンカード">
+          <div class="board-tag state">森の状態カード</div>
+          <div class="board-tag turn">ターンカード</div>
+          ${['wood','wood','wood','wood','wood'].map((k,i)=>`<img class="hex-token wood-zone" style="transform:translate(${i*18}px,${(i%2)*18}px)" src="${IMG.wood}" alt="木">`).join('')}
+          ${['water','water','water','water','water'].map((k,i)=>`<img class="hex-token water-zone" style="transform:translate(${i*18}px,${(i%2)*18}px)" src="${IMG.water}" alt="水">`).join('')}
+          ${['soil','soil','soil','soil','soil'].map((k,i)=>`<img class="hex-token soil-zone" style="transform:translate(${i*18}px,${(i%2)*18}px)" src="${IMG.soil}" alt="土">`).join('')}
+          <div class="add-badge wood step" data-step="1">＋5</div>
+          <div class="add-badge water step" data-step="1">＋5</div>
+          <div class="add-badge soil step" data-step="1">＋5</div>
+        </div>
+        <div class="round-note sticker step" data-step="2">
+          <div class="note-title">ターンカードの数だけ追加</div>
+          <div class="cmp-row">
+            <img class="mini-state" src="${IMG.healthyState}" alt="元気な森">
+            <div>元気な森<br>木・水・土 ＋5</div>
+          </div>
+          <div class="cmp-row tired">
+            <img class="mini-state" src="${IMG.tiredState}" alt="つかれた森">
+            <div>つかれた森は 各 <span class="down1">−1</span><br>＋5 → <span class="down1">＋4</span></div>
+          </div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'カードを出す',
+    title:'数字カードを出して、順番に取る',
+    captions:[
+      '数字カードを出した人から、森ボードの木・水・土を順番に取っていきます。',
+      '回復カードなら、木・水・土を森に足してから、好きなしげんを1個受け取ります。'
+    ],
+    visual:`
+      <div class="round-flow">
+        <div class="flow-side">
+          <div class="flow-player you step" data-step="0">
+            <p class="flow-name">あなた</p>
+            <img class="flow-card" src="${IMG.n2}" alt="利用カード2">
+            <div class="taken-goods step" data-step="1">
+              <div class="take-note">2個取る</div>
+              ${tokenLine(['wood','water'])}
+            </div>
+          </div>
+          <div class="flow-player step" data-step="0">
+            <p class="flow-name">みさき</p>
+            <img class="flow-card" src="${IMG.n4}" alt="利用カード4">
+            <div class="taken-goods step" data-step="2">
+              <div class="take-note">4個取る</div>
+              ${tokenLine(['wood','wood','soil','soil'])}
+            </div>
+          </div>
+        </div>
+        <div class="flow-board step" data-step="0">
+          <img class="board" src="${IMG.board}" alt="森林ボード">
+          <div class="turn-order">順番に取る</div>
+          ${zoneTokens('wood-zone small-token','wood',[1,2,2,3,null],7)}
+          ${zoneTokens('water-zone small-token','water',[1,null,3,3,null],7)}
+          ${zoneTokens('soil-zone small-token','soil',[null,2,2,3,3],7)}
+          <div class="recovery-burst step" data-step="3">
+            <div class="take-note">ゆい：森に＋1ずつ</div>
+            ${tokenLine(['wood','water','soil'])}
+          </div>
+        </div>
+        <div class="flow-side">
+          <div class="flow-player step" data-step="0">
+            <p class="flow-name">けん</p>
+            <img class="flow-card" src="${IMG.n5}" alt="利用カード5">
+            <div class="taken-goods step" data-step="3">
+              <div class="take-note">5個取る</div>
+              ${tokenLine(['wood','water','water','soil','soil'])}
+            </div>
+          </div>
+          <div class="flow-player active step" data-step="0">
+            <p class="flow-name">ゆいの手番</p>
+            <img class="flow-card" src="${IMG.recov}" alt="森を元気にするカード">
+            <div class="taken-goods recovery step" data-step="4">
+              <div class="recovery-lines">
+                <div class="take-note">回復カード</div>
+                <div class="recover-plus">森に＋ ${tokenLine(['wood','water','soil'])}</div>
+                <div class="recover-pick">${token('wood', 'small')} 木ブロックを1個取る</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'カードを選ぶ',
+    title:'数字カードか、森を元気にするカード',
+    captions:[
+      '数字カードは、森から取りたいしげんの合計数です。',
+      '森を元気にするカードを選ぶこともできます。'
+    ],
+    visual:`
+      <div class="table">
+        <div class="choice-pack step" data-step="0">
+          <div class="pill">数字カード</div>
+          <div class="card-row">
+            <img class="card-img small" src="${IMG.n1}" alt="利用カード1">
+            <img class="card-img small" src="${IMG.n2}" alt="利用カード2">
+            <img class="card-img small" src="${IMG.n3}" alt="利用カード3">
+            <img class="card-img small" src="${IMG.n4}" alt="利用カード4">
+            <img class="card-img small" src="${IMG.n5}" alt="利用カード5">
+            <img class="card-img small" src="${IMG.n6}" alt="利用カード6">
+          </div>
+        </div>
+        <div class="choice-pack step" data-step="1">
+          <div class="pill">森を元気にするカード</div>
+          <img class="card-img" src="${IMG.recov}" alt="森を元気にするカード">
+        </div>
+      </div>`
+  },
+  {
+    kicker:'順番に公開',
+    title:'数字の数だけ、しげんを取る',
+    captions:[
+      'たとえば「3」なら、木・水・土を合わせて3個 取ります。',
+      '取ったしげんは、数字カードの「しげん置き場」に1つずつ置きます。'
+    ],
+    visual:`
+      <div class="place-demo">
+        <div class="person step" data-step="0">
+          <p class="person-name">みさき「3」</p>
+          <div class="place-card-wrap">
+            <img class="card-img" src="${IMG.n3}" alt="数字カード3（しげん置き場つき）">
+            <span class="drop-slot d1"><img class="drop-token step" data-step="1" src="${IMG.wood}" alt="木"></span>
+            <span class="drop-slot d2"><img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木"></span>
+            <span class="drop-slot d3"><img class="drop-token step" data-step="3" src="${IMG.water}" alt="水"></span>
+          </div>
+        </div>
+        <div class="place-guide sticker step" data-step="1">
+          <div class="pill hot">森から取ったしげんを</div>
+          <div class="arrow">↓</div>
+          <div class="pill">数字カードの<br>「しげん置き場」へ</div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'大事なルール',
+    title:'同じ数字は、横取り',
+    captions:[
+      '後から同じ数字を出した人が、先に取っていたしげんを横取りします。',
+      '横取りされるのは、このラウンドのカードの上にあるしげんだけです。'
+    ],
+    visual:`
+      <div class="take-layout">
+        <div class="person step" data-step="0">
+          <p class="person-name">みさき（先に取った）</p>
+          <img class="card-img small" src="${IMG.n3}" alt="利用カード3">
+          <div class="card-pad steal-from">
+            ${tokenLine(['wood','wood','water'])}
+            <div class="taken-stamp step" data-step="2">とられた！</div>
+          </div>
+        </div>
+        <div class="steal-mid step" data-step="1">
+          <div class="grab-hand">✋</div>
+          <div class="pill hot">よこどり！</div>
+          <div class="arrow">→</div>
+        </div>
+        <div class="person step" data-step="1">
+          <p class="person-name">けん（同じ「3」）</p>
+          <img class="card-img small" src="${IMG.n3}" alt="利用カード3">
+          <div class="card-pad steal-to">
+            <div class="moving-res step" data-step="2">${tokenLine(['wood','wood','water'])}</div>
+            <div class="pill got step" data-step="2">ゲット！</div>
+          </div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'森のようす',
+    title:'足りないと、つかれた森になる',
+    captions:[
+      '森にしげんが足りない時は、残っている分だけ取ります。',
+      '足りなくなったら、森は「つかれた森」になります。'
+    ],
+    visual:`
+      <div class="state-flow">
+        <div class="state-card healthy step" data-step="0">
+          <img class="state-tile" src="${IMG.healthyState}" alt="元気な森">
+          <div class="pill">元気な森</div>
+        </div>
+        <div class="arrow step" data-step="1">→</div>
+        <div class="state-card tired step" data-step="1">
+          <img class="state-tile" src="${IMG.tiredState}" alt="つかれた森">
+          <div class="pill">つかれた森</div>
+        </div>
+        <div class="choice-pack step" data-step="2">
+          <img class="card-img small" src="${IMG.warn}" alt="警告カード">
+          <div class="pill">足りなくさせた人は警告</div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'森を元気にする',
+    title:'森にしげんを戻そう',
+    captions:[
+      '森を元気にするカードを出すと、つかれた森を 元気な森に戻せます。',
+      '木・水・土を1つずつ森林ボードに戻し、そのあと 好きなしげんを1つ もらえます。'
+    ],
+    visual:`
+      <div class="recover-flow">
+        <div class="board-wrap step" data-step="0">
+          <img class="board" src="${IMG.board}" alt="森林ボード">
+          <img class="state-on-board" src="${IMG.healthyState}" alt="森の状態カード（元気な森）">
+          <div class="board-tag state">元気な森にもどる</div>
+          <img class="hex-token wood-zone step" data-step="1" src="${IMG.wood}" alt="木">
+          <img class="hex-token water-zone step" data-step="1" src="${IMG.water}" alt="水">
+          <img class="hex-token soil-zone step" data-step="1" src="${IMG.soil}" alt="土">
+          <div class="add-badge wood step" data-step="1">＋1</div>
+          <div class="add-badge water step" data-step="1">＋1</div>
+          <div class="add-badge soil step" data-step="1">＋1</div>
+        </div>
+        <div class="recover-side">
+          <div class="recover-card-box step" data-step="0">
+            <img class="card-img" src="${IMG.recovWater}" alt="森を元気にするカード">
+            <div class="pill">このカードを出す</div>
+          </div>
+          <div class="get-one sticker step" data-step="2">
+            <div class="pill hot">好きなしげんを1つ もらう</div>
+            <div class="get-choice">
+              <img src="${IMG.wood}" alt="木">
+              <img src="${IMG.water}" alt="水">
+              <img src="${IMG.soil}" alt="土">
+            </div>
+            <div class="pill">→ どれか1つ 手もとへ</div>
+          </div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'ラウンドの終わり',
+    title:'つくるカードを完成させる',
+    captions:[
+      '集めたしげんを使って、つくるカードを作ります。',
+      '資源が足りれば、自分の番で何枚でも作れます。'
+    ],
+    visual:`
+      <div class="make-grid">
+        <div class="make-item sticker step" data-step="0">
+          <img src="${IMG.chopsticks}" alt="箸を使う">
+          <div class="points">2点</div>
+        </div>
+        <div class="make-item sticker step" data-step="1">
+          <img src="${IMG.violin}" alt="バイオリンを弾く">
+          <div class="points">3点</div>
+        </div>
+        <div class="make-item sticker step" data-step="1">
+          <img src="${IMG.sauna}" alt="サウナに入る">
+          <div class="points">6点</div>
+        </div>
+        <div class="make-item sticker step" data-step="2">
+          <img src="${IMG.washoku}" alt="和食を作る">
+          <div class="points">5点</div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'6ラウンドのあと',
+    title:'森が元気なら、点数勝負',
+    captions:[
+      '最後に森が元気な森なら、つくるカードの点数を合計します。',
+      '点数がいちばん高い人が勝ちです。'
+    ],
+    visual:`
+      <div class="result-panels">
+        <div class="result-panel ok sticker step" data-step="0">
+          <img class="state-tile" src="${IMG.healthyState}" alt="元気な森">
+          <div class="large-word">元気な森</div>
+        </div>
+        <div class="result-panel sticker step" data-step="1">
+          <div class="card-row">
+            <img class="card-img small" src="${IMG.sauna}" alt="サウナに入る">
+            <img class="card-img small" src="${IMG.washoku}" alt="和食を作る">
+            <img class="card-img small" src="${IMG.satoyama}" alt="里山でくらす">
+          </div>
+          <div class="large-word">点数勝負</div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'さいごに',
+    title:'森がつかれたままなら、全員脱落',
+    captions:[
+      '最後に森がつかれた森のままだと、どれだけ点を取っていても勝者はいません。',
+      '自分の点数と、みんなの森。両方を見ながら遊びましょう。'
+    ],
+    visual:`
+      <div class="result-panels">
+        <div class="result-panel bad sticker step" data-step="0">
+          <img class="state-tile" src="${IMG.tiredState}" alt="つかれた森">
+          <div class="large-word">全員脱落</div>
+        </div>
+        <div class="result-panel ok sticker step" data-step="1">
+          <img src="${IMG.mascot}" alt="マスコット">
+          <div class="large-word">森も、くらしも、元気に</div>
+        </div>
+      </div>`
+  }
+];
+
+let current = 0;
+let playing = !new URLSearchParams(location.search).has('paused');
+let timers = [];
+let rafId = null;
+let progressStart = 0;
+let progressDuration = 1;
+const stage = document.getElementById('stage');
+const bar = document.getElementById('bar');
+const dots = document.getElementById('dots');
+const count = document.getElementById('count');
+const playBtn = document.getElementById('playBtn');
+
+function buildSlide(scene, index){
+  const el = document.createElement('section');
+  el.className = 'slide';
+  el.innerHTML = `
+    <header class="head">
+      <img class="mascot" src="${IMG.mascot}" alt="">
+      <div>
+        <div class="kicker">${scene.kicker}</div>
+        <h1 class="title">${scene.title}</h1>
+      </div>
+      <div class="scene-no">${index+1}/${SCENES.length}</div>
+    </header>
+    <div class="visual">${scene.visual}</div>
+    <div class="caption-box">
+      ${scene.captions.map((line,i)=>`<div class="caption ${i===0?'hot':''}" data-cap="${i}">${line}</div>`).join('')}
+    </div>
+  `;
+  return el;
+}
+function clearTimers(){
+  timers.forEach(clearTimeout);
+  timers = [];
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+}
+function renderDots(){
+  dots.innerHTML = SCENES.map((_,i)=>`<button class="dot ${i===current?'active':''}" type="button" aria-label="${i+1}枚目へ" data-go="${i}"></button>`).join('');
+  dots.querySelectorAll('.dot').forEach(dot => {
+    dot.addEventListener('click', () => goTo(Number(dot.dataset.go)));
+  });
+}
+function animateProgress(duration){
+  progressStart = performance.now();
+  progressDuration = duration;
+  const tick = now => {
+    if(!playing){
+      rafId = requestAnimationFrame(tick);
+      return;
+    }
+    const pct = Math.min(100, ((now - progressStart) / progressDuration) * 100);
+    bar.style.width = pct + '%';
+    if(pct < 100) rafId = requestAnimationFrame(tick);
+  };
+  rafId = requestAnimationFrame(tick);
+}
+function showSlide(index){
+  clearTimers();
+  current = index;
+  stage.innerHTML = '';
+  const scene = SCENES[index];
+  const el = buildSlide(scene, index);
+  stage.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('active'));
+  count.textContent = `${index+1} / ${SCENES.length}`;
+  renderDots();
+  const stepEls = Array.from(el.querySelectorAll('.step'));
+  const capEls = Array.from(el.querySelectorAll('.caption'));
+  let maxStep = 0;
+  stepEls.forEach(item => {
+    const step = Number(item.dataset.step || 0);
+    maxStep = Math.max(maxStep, step);
+    timers.push(setTimeout(() => item.classList.add('show'), 360 + step * LINE_GAP));
+  });
+  capEls.forEach((item, i) => {
+    timers.push(setTimeout(() => item.classList.add('show'), 520 + i * LINE_GAP));
+  });
+  const last = Math.max(maxStep, capEls.length - 1);
+  const duration = 600 + (last + 1) * LINE_GAP + HOLD_AFTER;
+  bar.style.width = '0%';
+  animateProgress(duration);
+  if(playing){
+    timers.push(setTimeout(() => {
+      if(current < SCENES.length - 1) goTo(current + 1);
+      else {
+        playing = false;
+        updatePlayButton();
+      }
+    }, duration));
+  }
+}
+function goTo(index){
+  showSlide(Math.max(0, Math.min(SCENES.length - 1, index)));
+}
+function updatePlayButton(){
+  playBtn.textContent = playing ? '一時停止' : '再生';
+  playBtn.classList.toggle('primary', playing);
+}
+document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+document.getElementById('restartBtn').addEventListener('click', () => {
+  playing = true;
+  updatePlayButton();
+  goTo(0);
+});
+playBtn.addEventListener('click', () => {
+  playing = !playing;
+  updatePlayButton();
+  showSlide(current);
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowLeft') goTo(current - 1);
+  if(e.key === 'ArrowRight') goTo(current + 1);
+  if(e.key === ' '){
+    e.preventDefault();
+    playBtn.click();
+  }
+});
+function preloadAll(done){
+  const urls = [...new Set(Object.values(IMG))];
+  const loaderBar = document.getElementById('loaderBar');
+  const loaderPct = document.getElementById('loaderPct');
+  let n = 0;
+  if(!urls.length){ done(); return; }
+  const bump = () => {
+    n++;
+    const pct = Math.round(n / urls.length * 100);
+    if(loaderBar) loaderBar.style.width = pct + '%';
+    if(loaderPct) loaderPct.textContent = pct + '%';
+    if(n === urls.length) done();
+  };
+  urls.forEach(src => {
+    const im = new Image();
+    im.onload = im.onerror = bump;
+    im.src = src;
+  });
+}
+function startShow(){
+  const loader = document.getElementById('loader');
+  if(loader) loader.remove();
+  const s = parseInt(new URLSearchParams(location.search).get('s'), 10);
+  showSlide(Number.isInteger(s) ? Math.max(0, Math.min(SCENES.length - 1, s)) : 0);
+}
+updatePlayButton();
+preloadAll(startShow);
+</script>
+</body>
+</html>
