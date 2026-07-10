@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>もりノコ｜子ども向けルール動画</title>
+<title>盗人キッド｜子ども向けルール動画 v2</title>
 <style>
 :root{
   --ink:#22201b;
@@ -57,7 +57,7 @@ button{font-family:inherit}
   inset:16px;
   display:grid;
   grid-template-rows:auto minmax(0,1fr) auto;
-  gap:12px;
+  gap:18px;
   opacity:0;
   transform:translateX(28px) scale(.985);
   transition:opacity .38s ease, transform .38s ease;
@@ -89,13 +89,22 @@ button{font-family:inherit}
   letter-spacing:.08em;
   color:var(--green);
 }
+/* フェーズごとに見出し色を変え、章の切れ目を字幕なしでも視覚的に示す */
+.slide[data-phase="intro"] .kicker{color:var(--blue)}
+.slide[data-phase="setup"] .kicker{color:var(--brown)}
+.slide[data-phase="turn"] .kicker{color:var(--green)}
+.slide[data-phase="exception"] .kicker{color:var(--red)}
+.slide[data-phase="build"] .kicker{color:var(--brown)}
+.slide[data-phase="end"] .kicker{color:var(--blue)}
 .title{
   margin:2px 0 0;
   font-size:clamp(1.55rem, 3.8vw, 3.25rem);
   line-height:1.08;
   letter-spacing:0;
   font-weight:900;
+  overflow-wrap:anywhere;
 }
+.head-info{min-width:0}
 .scene-no{
   min-width:68px;
   text-align:center;
@@ -109,15 +118,18 @@ button{font-family:inherit}
 .visual{
   width:100%;
   max-width:1120px;
+  min-width:0;
   min-height:0;
   margin:0 auto;
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:center;
+  overflow:hidden;
 }
 .caption-box{
   max-width:960px;
   width:100%;
+  min-width:0;
   margin:0 auto;
   display:flex;
   flex-direction:column;
@@ -132,6 +144,7 @@ button{font-family:inherit}
   font-size:clamp(1rem, 2vw, 1.3rem);
   line-height:1.55;
   font-weight:800;
+  overflow-wrap:anywhere;
   opacity:0;
   transform:translateY(10px);
   transition:opacity .42s ease, transform .42s ease;
@@ -150,13 +163,23 @@ button{font-family:inherit}
   border-radius:var(--radius);
   box-shadow:var(--shadow);
 }
-.board-wrap{
+/* --- 森林ボード：全シーン共通の定点コンポーネント --- */
+.board-scene{
   position:relative;
-  width:min(92vw,72vh,780px);
-  height:auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(14px,3vw,36px);
+  flex-wrap:wrap;
+  width:min(96vw,1100px);
+  margin:0 auto;
+}
+.board-anchor{
+  position:relative;
+  width:min(34vw,42vh,300px);
   max-width:92vw;
   aspect-ratio:1448/1086;
-  margin:auto;
+  flex:0 0 auto;
 }
 .board{
   position:absolute;
@@ -198,15 +221,6 @@ button{font-family:inherit}
 }
 .board-tag.state{left:47%;top:38%}
 .board-tag.turn{left:80%;top:33%}
-.round-add{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:clamp(14px,3vw,34px);
-  flex-wrap:wrap;
-  width:min(96vw,1080px);
-}
-.round-add .board-wrap{width:min(58vw,56vh,540px);margin:0}
 .add-badge{
   position:absolute;
   min-width:32px;
@@ -263,22 +277,41 @@ button{font-family:inherit}
 }
 .place-card-wrap{
   position:relative;
-  height:min(42vh,340px);
+  height:min(28vh,220px);
   max-width:44vw;
   aspect-ratio:650/1075;
 }
+.place-card-wrap.small{height:min(28vh,220px);max-width:30vw;margin:0 auto}
 .place-card-wrap .card-img{width:100%;height:100%}
-.drop-slot{position:absolute;width:18%;transform:translate(-50%,-50%)}
-.drop-slot.d1{left:31%;top:66%}
-.drop-slot.d2{left:50%;top:66%}
-.drop-slot.d3{left:69%;top:66%}
-.drop-token{
+/* 数字カード（しげん置き場つき）を裏→表にめくるための上書き */
+.place-card-wrap .flip-card{
   width:100%;
+  height:100%;
+  aspect-ratio:650/1075;
+}
+.place-card-wrap .flip-face{border-radius:10px}
+.place-card-wrap .place-slots{z-index:2}
+/* しげん置き場：何個でも置けるよう、絶対配置の固定スロットではなく折り返しで並べる */
+/* カードの白枠（しげん置き場）はおよそ 縦55〜92%・横10〜90% の範囲 */
+.place-slots{
+  position:absolute;
+  left:12%;
+  right:12%;
+  top:56%;
+  bottom:9%;
+  display:flex;
+  flex-wrap:wrap;
+  align-content:center;
+  justify-content:center;
+  gap:6%;
+}
+.drop-token{
+  width:25%;
   aspect-ratio:1;
   object-fit:contain;
   filter:drop-shadow(2px 2px 0 rgba(34,32,27,.55));
 }
-.drop-token.step{transform:translateY(-42px) scale(1.18)}
+.drop-token.step{transform:translateY(-12px) scale(1.06)}
 .drop-token.step.show{transform:translateY(0) scale(1)}
 .place-guide{
   display:flex;
@@ -287,43 +320,28 @@ button{font-family:inherit}
   gap:8px;
   padding:16px 20px;
 }
-.recover-flow{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:clamp(14px,3vw,36px);
-  flex-wrap:wrap;
-  width:min(96vw,1060px);
-}
-.recover-flow .board-wrap{width:min(50vw,46vh,460px);margin:0}
 .recover-side{
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:6px;
   align-items:center;
 }
 .recover-card-box{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:5px;
+  gap:4px;
 }
-.recover-card-box .card-img{width:clamp(64px,7vw,92px)}
+.recover-card-box .card-img{width:clamp(52px,6vw,74px)}
 .get-one{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:6px;
-  padding:10px 14px;
+  gap:4px;
+  padding:8px 12px;
   min-width:min(88vw,222px);
 }
-.get-choice{display:flex;gap:10px}
-.get-choice img{
-  width:clamp(30px,4vw,42px);
-  aspect-ratio:1;
-  object-fit:contain;
-  filter:drop-shadow(2px 2px 0 rgba(34,32,27,.55));
-}
+.get-one .res{width:clamp(36px,5vw,48px);height:clamp(36px,5vw,48px)}
 .hex-token{
   position:absolute;
   width:5.8%;
@@ -345,9 +363,6 @@ button{font-family:inherit}
   border-radius:999px;
   padding:3px 10px;
 }
-.resource-label.wood{left:16%;top:47%}
-.resource-label.water{left:45%;top:48%}
-.resource-label.soil{left:74%;top:47%}
 .state-tile{
   width:clamp(185px,24vw,290px);
   aspect-ratio:288/170;
@@ -355,9 +370,11 @@ button{font-family:inherit}
   border-radius:18px;
   filter:drop-shadow(4px 4px 0 rgba(34,32,27,.75));
 }
+.state-tile.mini{width:clamp(56px,9vw,84px)}
 .table{
   width:min(92vw,980px);
-  min-height:360px;
+  min-height:min(360px,40vh);
+  max-height:56vh;
   padding:24px;
   background:var(--green-soft);
   border:3px solid var(--ink);
@@ -368,6 +385,7 @@ button{font-family:inherit}
   justify-content:center;
   gap:22px;
   flex-wrap:wrap;
+  overflow:hidden;
 }
 .card-img{
   width:clamp(92px, 13vw, 160px);
@@ -378,6 +396,7 @@ button{font-family:inherit}
 }
 .card-img.big{width:clamp(130px, 18vw, 218px)}
 .card-img.small{width:clamp(68px, 9vw, 106px)}
+.card-img.hero{width:auto;height:min(230px,32vh);aspect-ratio:650/1075}
 .card-row{
   display:flex;
   gap:12px;
@@ -468,12 +487,6 @@ button{font-family:inherit}
 .state-card img{width:clamp(125px,17vw,190px)}
 .state-card.tired .pill{background:var(--red-soft)}
 .state-card.healthy .pill{background:var(--green-soft)}
-.plus-box{
-  display:grid;
-  gap:10px;
-  padding:18px;
-  background:var(--blue-soft);
-}
 .make-grid{
   display:grid;
   grid-template-columns:repeat(4, minmax(110px, 1fr));
@@ -500,21 +513,39 @@ button{font-family:inherit}
 }
 .result-panel{
   padding:20px;
-  min-height:260px;
+  min-height:min(260px,32vh);
+  max-height:52vh;
   display:grid;
   align-content:center;
   justify-items:center;
   gap:12px;
   text-align:center;
+  overflow:hidden;
 }
 .result-panel.ok{background:var(--green-soft)}
 .result-panel.bad{background:var(--red-soft)}
 .result-panel img{width:clamp(110px,17vw,175px)}
+.result-panel .state-tile{width:clamp(170px,23vw,260px)}
 .large-word{
   font-size:clamp(1.7rem,4vw,3rem);
   line-height:1.15;
   font-weight:900;
 }
+/* 得点パネル：カード4枚が枠とかぶらないよう小さめにし、左上の点数を赤丸で囲む */
+.result-panel .card-row{gap:6px}
+.result-card{position:relative;display:inline-block}
+.result-card .card-img{width:clamp(56px,7.5vw,84px)}
+.card-num-ring{
+  position:absolute;
+  left:8%;
+  top:9%;
+  width:24%;
+  aspect-ratio:1;
+  border:4px solid var(--red);
+  border-radius:50%;
+  pointer-events:none;
+}
+.count-num{font-variant-numeric:tabular-nums;color:var(--green)}
 .controls{
   flex:none;
   display:flex;
@@ -582,6 +613,9 @@ button{font-family:inherit}
   0%,100%{transform:translateX(-9px) rotate(-10deg)}
   50%{transform:translateX(9px) rotate(10deg)}
 }
+body.paused .moving-res,
+body.paused .grab-hand,
+body.paused .ng-mark{animation-play-state:paused}
 .card-pad.steal-from{position:relative;border-color:var(--red);background:var(--red-soft)}
 .taken-stamp{
   position:absolute;
@@ -603,47 +637,242 @@ button{font-family:inherit}
   background:var(--green-soft);
 }
 .pill.got{background:var(--green);color:#fff}
-.round-flow{
-  width:min(96vw,980px);
-  display:grid;
-  grid-template-columns:1fr minmax(260px,.9fr) 1fr;
-  gap:14px;
+/* --- NGハイライト（つかれた森トリガー） --- */
+.ng-mark{
+  position:absolute;
+  width:15%;
+  aspect-ratio:1;
+  display:flex;
   align-items:center;
-  justify-items:center;
+  justify-content:center;
+  font-size:clamp(1.4rem,3.6vw,2.4rem);
+  font-weight:900;
+  color:#fff;
+  background:var(--red);
+  border:3px solid var(--ink);
+  border-radius:999px;
+  transform:translate(-50%,-50%);
+  box-shadow:3px 3px 0 var(--ink);
+  animation:shake .4s ease-in-out 3;
 }
-.flow-board{
+@keyframes shake{
+  0%,100%{transform:translate(-50%,-50%) rotate(0)}
+  25%{transform:translate(-50%,-50%) rotate(-12deg)}
+  75%{transform:translate(-50%,-50%) rotate(12deg)}
+}
+/* --- 森の状態カードを裏返す演出 --- */
+.flip-anchor{perspective:800px}
+.flip-card{
   position:relative;
   width:100%;
-  max-width:330px;
-  aspect-ratio:1448/1086;
+  aspect-ratio:288/170;
+  transform-style:preserve-3d;
+  transition:transform .7s cubic-bezier(.4,.2,.2,1);
 }
-.flow-board .board{
+.flip-card.step{opacity:1;transform:rotateY(0)}
+.flip-card.step.show{transform:rotateY(180deg)}
+.flip-face{
   position:absolute;
   inset:0;
   width:100%;
   height:100%;
   object-fit:contain;
-  filter:drop-shadow(4px 4px 0 rgba(34,32,27,.75));
+  border-radius:10px;
+  backface-visibility:hidden;
+  filter:drop-shadow(3px 3px 0 rgba(34,32,27,.8));
+}
+.flip-face.back{transform:rotateY(180deg)}
+body.paused .flip-card{transition-duration:.001ms}
+/* --- ターンカードを裏→表にめくる演出 --- */
+.turn-flip-col{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+}
+.turn-flip{
+  position:relative;
+  width:min(24vw,190px);
+}
+.turn-flip .flip-card{aspect-ratio:650/1075}
+.turn-flip .flip-face{border-radius:8px}
+/* ターンカード下段の数字を囲むリング */
+.num-ring{
+  position:absolute;
+  left:8%;
+  right:8%;
+  top:77%;
+  bottom:4.5%;
+  border:4px dashed var(--red);
+  border-radius:14px;
+  pointer-events:none;
+  z-index:2;
+}
+/* トークンのかたまりを各ブロックの六角形の中心に合わせるアンカー */
+.wood-zone.cluster{left:11.5%;top:57%}
+.water-zone.cluster{left:41.5%;top:58%}
+.soil-zone.cluster{left:70.5%;top:57%}
+/* 小さめトークン（8%幅）はかたまりが広くなるぶん、開始位置を左上に寄せる */
+.hex-token.small-token.wood-zone.cluster{left:7.5%;top:55%}
+.hex-token.small-token.water-zone.cluster{left:37.5%;top:56%}
+.hex-token.small-token.soil-zone.cluster{left:66.5%;top:55%}
+/* 手番プレイヤーの小さいカードを裏→表にめくる */
+.flow-flip{
+  position:relative;
+  grid-area:card;
+  width:clamp(38px,4vw,50px);
+  perspective:600px;
+}
+.flow-flip .flip-card{aspect-ratio:650/1075}
+.flow-flip .flip-face{border-radius:6px;filter:drop-shadow(2px 2px 0 rgba(34,32,27,.6))}
+.flow-flip .place-slots{z-index:2}
+/* しげん置き場にトークンを置く見せ方：カードを大きめにして1列レイアウトにする */
+.flow-player.solo{
+  grid-template-columns:1fr;
+  grid-template-areas:"name" "card" "note";
+  justify-items:center;
+}
+.flow-player.solo .flow-flip{width:clamp(60px,7vw,92px)}
+.flow-player.solo .take-note{grid-area:note;text-align:center}
+/* トークン→プレイヤーを実際の要素位置で結ぶ矢印レイヤー（JSで描画） */
+.arrow-layer{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index:4;
+  overflow:visible;
+}
+/* 森のトークン全体を囲んで合計数を見せるリング */
+.count-ring{
+  position:absolute;
+  left:3.5%;
+  right:3.5%;
+  top:49%;
+  bottom:17%;
+  border:4px dashed var(--red);
+  border-radius:20px;
+  z-index:2;
+  pointer-events:none;
+}
+.count-ring .count-badge,
+.flip-ring .count-badge{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  transform:translate(-50%,55%);
+  background:var(--red);
+  color:#fff;
+  font-weight:900;
+  border:2px solid var(--ink);
+  border-radius:999px;
+  padding:3px 14px;
+  white-space:nowrap;
+  font-size:clamp(.78rem,1.6vw,1.05rem);
+  box-shadow:2px 2px 0 var(--ink);
+}
+/* 森の状態カードのまわりを囲むリング */
+.flip-ring{
+  position:absolute;
+  left:47%;
+  top:20%;
+  width:38%;
+  aspect-ratio:288/170;
+  transform:translate(-50%,-50%);
+  border:4px dashed var(--red);
+  border-radius:14px;
+  z-index:3;
+  pointer-events:none;
+}
+/* .stepの出現アニメが中央寄せのtransformを上書きしないようにする */
+.flip-ring.step{transform:translate(-50%,-50%) translateY(16px)}
+.flip-ring.step.show{transform:translate(-50%,-50%)}
+/* ボード脇の短い説明ラベル */
+.side-labels{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  flex:0 0 auto;
+  align-items:center;
+}
+.side-labels .pill{text-align:center}
+/* 手札の扇形表示（カード同士を重ねる） */
+.hand-fan{
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  padding:14px 6px 6px;
+}
+.hand-fan .fan-card{
+  position:relative;
+  transform-origin:50% 100%;
+}
+.hand-fan .fan-card + .fan-card{margin-left:calc(-1 * clamp(30px,4.5vw,58px))}
+.hand-fan .fan-card img{display:block}
+.hand-fan .fan-card.picked{z-index:5}
+/* 数字の枠から森林エリアへ伸びる矢印 */
+.flow-arrow{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+  margin-top:clamp(30px,9vh,80px);
+}
+.flow-arrow .shaft{
+  position:relative;
+  width:clamp(70px,11vw,150px);
+  border-top:6px dashed var(--red);
+}
+.flow-arrow .shaft::after{
+  content:'';
+  position:absolute;
+  right:-8px;
+  top:-14px;
+  width:0;
+  height:0;
+  border:11px solid transparent;
+  border-left:18px solid var(--red);
 }
 .flow-side{
   display:grid;
-  gap:12px;
-  width:100%;
+  gap:8px;
+  width:min(26vw,230px);
+  flex:0 0 auto;
 }
 .flow-player{
   position:relative;
-  min-height:132px;
-  padding:10px;
+  min-height:0;
+  padding:7px;
   display:grid;
   grid-template-columns:auto 1fr;
   grid-template-areas:"name name" "card goods";
-  gap:10px;
+  gap:6px;
   justify-items:center;
   align-items:center;
   background:var(--white);
   border:3px solid var(--ink);
   border-radius:16px;
   box-shadow:3px 3px 0 var(--ink);
+}
+.turn-badge{
+  position:absolute;
+  left:-12px;
+  top:-12px;
+  width:30px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--ink);
+  color:#fff;
+  font-weight:900;
+  font-size:.9rem;
+  border-radius:999px;
+  box-shadow:2px 2px 0 var(--ink);
+  z-index:2;
 }
 .flow-player.you{background:var(--yellow-soft)}
 .flow-player.active{
@@ -654,11 +883,11 @@ button{font-family:inherit}
   grid-area:name;
   margin:0;
   font-weight:900;
-  font-size:.95rem;
+  font-size:.82rem;
 }
 .flow-card{
   grid-area:card;
-  width:clamp(54px,6vw,72px);
+  width:clamp(38px,4vw,50px);
   aspect-ratio:650/1075;
   object-fit:contain;
   border-radius:8px;
@@ -666,13 +895,13 @@ button{font-family:inherit}
 }
 .taken-goods{
   grid-area:goods;
-  min-width:112px;
-  min-height:72px;
-  padding:8px;
+  min-width:96px;
+  min-height:0;
+  padding:5px;
   display:grid;
   align-content:center;
   justify-items:center;
-  gap:5px;
+  gap:3px;
   border:3px dashed var(--ink);
   border-radius:14px;
   background:var(--yellow-soft);
@@ -735,37 +964,238 @@ button{font-family:inherit}
   left:50%;
   top:13%;
   transform:translate(-50%,-50%);
+}
+/* .stepの出現アニメが中央寄せのtransformを上書きしないようにする */
+.turn-order.step{transform:translate(-50%,-50%) translateY(16px) rotate(-1deg)}
+.turn-order.step.show{transform:translate(-50%,-50%)}
+.turn-order{
   padding:5px 10px;
   background:var(--white);
   border:3px solid var(--ink);
   border-radius:999px;
   box-shadow:2px 2px 0 var(--ink);
   font-weight:900;
-  font-size:.78rem;
+  font-size:clamp(.62rem,1.6vw,.78rem);
+  white-space:nowrap;
   z-index:2;
 }
-.result-panel .state-tile{width:clamp(170px,23vw,260px)}
+/* --- 全体ループ図 --- */
+.loop-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  width:100%;
+}
+.loop-flow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(6px,1.8vw,18px);
+  flex-wrap:wrap;
+  width:min(96vw,1080px);
+}
+.loop-step{
+  display:grid;
+  justify-items:center;
+  gap:6px;
+  max-width:150px;
+}
+.loop-note{
+  font-size:.72rem;
+  font-weight:800;
+  color:var(--brown);
+  text-align:center;
+  line-height:1.3;
+}
+/* ①〜⑤を必ず1行に収める（全体の流れシーン専用） */
+.loop-flow.single-row{
+  flex-wrap:nowrap;
+  align-items:flex-start;
+  gap:clamp(3px,1vw,10px);
+  width:100%;
+}
+.loop-flow.single-row .loop-step{
+  display:grid;
+  grid-template-rows:clamp(46px,9vw,92px) auto;
+  align-items:center;
+  justify-items:center;
+  row-gap:5px;
+  max-width:none;
+  flex:1 1 0;
+  min-width:0;
+}
+/* アイコンは全ステップ共通の固定高さの枠内に収め、下のラベルが必ず同じ高さに並ぶようにする */
+.loop-flow.single-row .loop-step > img,
+.loop-flow.single-row .loop-step > .flip-anchor,
+.loop-flow.single-row .loop-step > .resource-line{
+  grid-row:1;
+  align-self:center;
+  max-width:100%;
+  max-height:100%;
+}
+.loop-flow.single-row .loop-step > img{
+  width:auto;
+  height:auto;
+}
+.loop-flow.single-row .loop-step > .flip-anchor{
+  width:auto;
+  height:100%;
+  aspect-ratio:650/1075;
+}
+.loop-flow.single-row .loop-step .flip-card{
+  width:100%;
+  height:100%;
+  aspect-ratio:650/1075;
+}
+.loop-flow.single-row .loop-step > .pill{
+  grid-row:2;
+}
+.loop-flow.single-row .pill{
+  font-size:clamp(.68rem,1.85vw,1rem);
+  padding:5px 7px;
+  line-height:1.3;
+}
+.loop-flow.single-row .arrow{
+  font-size:clamp(1.1rem,2.4vw,1.75rem);
+  flex:0 0 auto;
+}
+/* --- ルールのおさらい --- */
+.recap-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  width:min(92vw,760px);
+}
+.recap-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 16px;
+  background:var(--white);
+  border:3px solid var(--ink);
+  border-radius:14px;
+  box-shadow:3px 3px 0 var(--ink);
+  font-weight:800;
+  font-size:clamp(.92rem,1.7vw,1.12rem);
+}
+.recap-item .check{
+  flex:none;
+  width:28px;
+  height:28px;
+  border-radius:999px;
+  background:var(--green);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+}
+/* --- 自然資本と生態系サービス（イントロ） --- */
+.capital-scene{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(14px,3vw,44px);
+  flex-wrap:wrap;
+  width:min(96vw,1020px);
+}
+.tub-col, .life-col{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+.tub-wrap{
+  position:relative;
+  padding:8px 20px 14px;
+}
+.tub{
+  position:relative;
+  width:min(30vw,150px);
+  height:min(20vh,94px);
+  border:4px solid var(--ink);
+  border-radius:14px 14px 22px 22px;
+  background:var(--white);
+  overflow:hidden;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.tub-water{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:0%;
+  background:linear-gradient(180deg,var(--blue-soft),var(--blue));
+  opacity:1;
+  transform:none;
+  transition:height 1.3s ease;
+}
+.tub-water.show{height:72%}
+.tub-spout{
+  position:absolute;
+  left:50%;
+  bottom:-10px;
+  width:16px;
+  height:14px;
+  background:var(--brown);
+  border:3px solid var(--ink);
+  border-radius:0 0 6px 6px;
+  transform:translateX(-50%);
+}
+.drip-zone{
+  position:relative;
+  width:24px;
+  height:42px;
+  margin-top:-10px;
+}
+.drip{
+  position:absolute;
+  left:50%;
+  top:-14px;
+  width:12px;
+  height:16px;
+  background:var(--blue);
+  border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+  transform:translateX(-50%);
+  opacity:0;
+  animation:dripfall 1.6s ease-in infinite;
+}
+.drip.d2{animation-delay:.5s}
+.drip.d3{animation-delay:1s}
+@keyframes dripfall{
+  0%{opacity:0; top:-14px}
+  10%{opacity:1}
+  85%{opacity:1}
+  100%{opacity:0; top:40px}
+}
+.mascot-mini{
+  width:clamp(52px,8vw,74px);
+  filter:drop-shadow(3px 3px 0 rgba(34,32,27,.85));
+}
+body.paused .drip{animation-play-state:paused}
 @media (max-width:760px){
   .slide{inset:10px;gap:8px}
   .head{grid-template-columns:auto 1fr;gap:10px}
   .scene-no{display:none}
   .mascot{width:52px}
-  .table{min-height:300px;padding:16px;gap:12px}
-  .take-layout{grid-template-columns:1fr;gap:10px}
+  .table{min-height:min(300px,34vh);padding:16px;gap:12px}
+  .take-layout{grid-template-columns:1fr;gap:6px}
   .arrow{transform:rotate(90deg)}
+  .place-card-wrap.small{height:min(16vh,120px)}
+  .steal-mid{gap:2px}
+  .person{padding:6px}
+  .person-name{font-size:.85rem;margin-bottom:4px}
   .make-grid{grid-template-columns:repeat(2,minmax(120px,1fr));gap:10px}
   .result-panels{grid-template-columns:1fr;gap:10px}
-  .round-flow{
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    align-content:center;
-  }
-  .flow-board{
-    grid-column:1/-1;
-    max-width:230px;
-    order:-1;
-  }
-  .flow-side{display:contents}
+  .board-scene{gap:6px}
+  .board-anchor{order:-1;width:min(66vw,240px);margin:0 auto 2px}
+  /* じゅんびシーンは「カード→矢印→ボード」の順を保つ */
+  .board-anchor.keep-order{order:0}
+  .flow-arrow{margin-top:0}
+  .flow-arrow .shaft{width:44px;transform:rotate(90deg);margin:16px 0}
+  .hand-fan .fan-card + .fan-card{margin-left:-42px}
+  .side-labels{order:-2;width:100%;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:6px}
+  .flow-side{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px}
   .flow-player{
     min-height:100px;
     padding:6px;
@@ -793,6 +1223,7 @@ button{font-family:inherit}
   .controls{gap:6px;padding:8px}
   .ctrl{min-width:66px;font-size:.85rem}
   .dots{display:none}
+  .tub{width:min(50vw,140px);height:min(24vh,96px)}
 }
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.001ms!important;transition-duration:.001ms!important}
@@ -827,300 +1258,528 @@ const IMG = {
   wood: CARD + 'tokens/wood.png',
   water: CARD + 'tokens/water.png',
   soil: CARD + 'tokens/soil.png',
-  n1: CARD + '28.jpg',
-  n2: CARD + '29.jpg',
-  n3: CARD + '30.jpg',
-  n4: CARD + '31.jpg',
-  n5: CARD + '32.jpg',
-  n6: CARD + '33.jpg',
+  n1: CARD + '数字カード/28.jpg',
+  n2: CARD + '数字カード/29.jpg',
+  n3: CARD + '数字カード/30.jpg',
+  n4: CARD + '数字カード/31.jpg',
+  n5: CARD + '数字カード/32.jpg',
+  n6: CARD + '数字カード/33.jpg',
   recov: CARD + '回復カード/53.jpg',
-  recovWater: CARD + '回復カード/54.jpg',
+  recovWater: CARD + '回復カード/52.png',
+  recovSoil: CARD + '回復カード/53.png',
+  numBack: CARD + '数字カード裏面.png',
   turn1: CARD + 'もりノコ_カード_ターンカード4人以下/34.jpg',
+  turnBack: CARD + 'もりノコ_カード_ターンカード4人以下/ターンカード裏面.png',
   healthy: CARD + 'もりノコ_カード/59.jpg',
   tired: CARD + 'もりノコ_カード/60.jpg',
   healthyState: CARD + 'state/healthy.jpg',
   tiredState: CARD + 'state/tired.jpg',
-  warn: CARD + 'もりノコ_カード/61.jpg',
+  warn: CARD + 'もりノコ_カード/警告カード.jpg',
+  exit: CARD + 'もりノコ_カード/退場カード.png',
   chopsticks: CARD + '1.jpg',
   violin: CARD + '2.jpg',
   sauna: CARD + '8.jpg',
   washoku: CARD + '14.jpg',
   satoyama: CARD + '15.jpg'
 };
-const LINE_GAP = 2200;
-const HOLD_AFTER = 2100;
+const PACE = 1.3; // 1.0が元の速さ。大きいほどゆっくり再生される
+const LINE_GAP = Math.round(2200 * PACE);
+const HOLD_AFTER = Math.round(2100 * PACE);
+const STEP_BASE = Math.round(360 * PACE);
+const CAP_BASE = Math.round(520 * PACE);
+const COUNT_DURATION = 900;
 const token = (kind, cls='') => `<img class="res ${cls}" src="${IMG[kind]}" alt="${kindLabel(kind)}">`;
 const kindLabel = kind => ({wood:'木',water:'水',soil:'土'})[kind] || kind;
 const tokenLine = list => `<div class="resource-line">${list.map(k => token(k, 'small')).join('')}</div>`;
-const zoneTokens = (zoneClass, kind, takenSteps, offset=18) => takenSteps.map((st,i) => {
+// トークンは3個ずつの段組みで、ブロックの六角形の中に収まるように並べる
+const zoneTokens = (zoneClass, kind, takenSteps) => takenSteps.map((st,i) => {
+  const col = i % 3, row = Math.floor(i / 3);
   const cls = st != null ? ' zone-token step' : '';
   const dataStep = st != null ? ` data-step="${st}"` : '';
-  return `<img class="hex-token ${zoneClass}${cls}" style="transform:translate(${i*offset}px,${(i%2)*offset}px)" src="${IMG[kind]}" alt="${kindLabel(kind)}"${dataStep}>`;
+  return `<img class="hex-token ${zoneClass}${cls}" style="transform:translate(${col*105 + row*52}%,${row*95}%)" src="${IMG[kind]}" alt="${kindLabel(kind)}"${dataStep}>`;
 }).join('');
+// 森にしげんが「実際に追加される」演出用（zoneTokensと違い、追加後に薄くならない）
+// 3個ずつの段組みで、ブロックの六角形の中に収まるように並べる
+const addTokens = (zoneClass, kind, count, step) => Array.from({length:count}).map((_,i) => {
+  const col = i % 3, row = Math.floor(i / 3);
+  return `<img class="hex-token ${zoneClass} step" data-step="${step}" style="transform:translate(${col*105 + row*52}%,${row*95}%)" src="${IMG[kind]}" alt="${kindLabel(kind)}">`;
+}).join('');
+// 森林ボードは全シーン共通のこの関数だけを通して描画する（サイズ・位置を常に固定するため）
+function renderBoard({ state='healthy', turnCardKey=null, tokenCls='', wood=[], water=[], soil=[], tags='', overlay='', cls='', dataStep=null, hideState=false }){
+  const classes = ['board-anchor', cls].filter(Boolean).join(' ');
+  const stepAttr = dataStep != null ? ` data-step="${dataStep}"` : '';
+  const stateKey = state === 'healthy' ? 'healthyState' : 'tiredState';
+  const stateLabel = state === 'healthy' ? '元気な森' : 'つかれた森';
+  const zoneCls = tokenCls ? ' ' + tokenCls : '';
+  return `
+    <div class="${classes}"${stepAttr}>
+      <img class="board" src="${IMG.board}" alt="森林ボード">
+      ${hideState ? '' : `<img class="state-on-board" src="${IMG[stateKey]}" alt="森の状態カード（${stateLabel}）">`}
+      ${turnCardKey ? `<img class="turn-card" src="${IMG[turnCardKey]}" alt="ターンカード">` : ''}
+      ${zoneTokens('wood-zone cluster' + zoneCls,'wood',wood)}
+      ${zoneTokens('water-zone cluster' + zoneCls,'water',water)}
+      ${zoneTokens('soil-zone cluster' + zoneCls,'soil',soil)}
+      ${tags}
+      ${overlay}
+    </div>`;
+}
+// トークン置き場（六角形）と各プレイヤーの数字カードの「しげん置き場」を、実際の表示位置で結ぶ矢印。
+// 表示タイミングは結び先のカードがめくれた（.flip-card.show）タイミングに連動させる。
+const ARROW_LINKS = [
+  { zoneX:.20, zoneY:.62, card:0 },
+  { zoneX:.20, zoneY:.62, card:1 },
+  { zoneX:.79, zoneY:.62, card:2 }
+];
+function updateArrows(){
+  const svg = document.querySelector('#stage .arrow-layer');
+  if(!svg) return;
+  const host = svg.parentElement;
+  const hostRect = host.getBoundingClientRect();
+  const board = host.querySelector('.board-anchor');
+  const cardEls = host.querySelectorAll('.flow-flip');
+  if(hostRect.width < 2 || !board || !cardEls.length) return;
+  svg.setAttribute('viewBox', `0 0 ${hostRect.width} ${hostRect.height}`);
+  const b = board.getBoundingClientRect();
+  let html = '<defs><marker id="arrowHead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#df5a42"/></marker></defs>';
+  ARROW_LINKS.forEach(link => {
+    const g = cardEls[link.card];
+    if(!g) return;
+    const gr = g.getBoundingClientRect();
+    const x1 = b.left + b.width * link.zoneX - hostRect.left;
+    const y1 = b.top + b.height * link.zoneY - hostRect.top;
+    // しげん置き場はカードの下側（縦およそ73%あたり）にある
+    const slotY = gr.top + gr.height * .73;
+    let x2, y2;
+    if(gr.top >= b.bottom - 4){
+      // 縦積みレイアウト：カードの上辺の中央へつなぐ
+      x2 = (gr.left + gr.right) / 2 - hostRect.left;
+      y2 = gr.top - hostRect.top;
+    } else if((gr.left + gr.right) / 2 > (b.left + b.right) / 2){
+      x2 = gr.left - hostRect.left;
+      y2 = slotY - hostRect.top;
+    } else {
+      x2 = gr.right - hostRect.left;
+      y2 = slotY - hostRect.top;
+    }
+    const flip = g.querySelector('.flip-card');
+    const show = !!(flip && flip.classList.contains('show'));
+    html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#df5a42" stroke-width="5" stroke-dasharray="10 7" stroke-linecap="round" marker-end="url(#arrowHead)" opacity="${show ? 1 : 0}" style="transition:opacity .4s ease"/>`;
+  });
+  svg.innerHTML = html;
+}
+window.addEventListener('resize', updateArrows);
 
 const SCENES = [
   {
     kicker:'はじめに',
-    title:'森のしげんで、くらしをつくろう',
-    captions:[
-      '木・水・土を集めて、「つくるカード」を完成させるゲームです。',
-      'でも、森を使いすぎると、森がつかれてしまいます。'
-    ],
+    phase:'intro',
+    title:'もりノコって、どんなゲーム？',
+    captions:[],
     visual:`
-      <div class="table">
-        <img class="card-img big step" data-step="0" src="${IMG.mascot}" alt="ゲームのマスコット">
-        <div class="choice-pack step" data-step="1">
+      <div class="table" style="align-self:center;max-height:min(640px,80vh);gap:16px">
+        <img class="card-img hero" style="height:min(150px,22vh)" src="${IMG.mascot}" alt="ゲームのマスコット">
+        <div class="choice-pack" style="gap:10px">
+          <div class="pill hot" style="font-size:clamp(.95rem,2vw,1.4rem);line-height:1.5;padding:10px 20px;text-align:center">森からしげんを得て、アクションカードを<br>利用して点をかくとくしよう！</div>
           <div class="card-row">
             <img class="card-img small" src="${IMG.chopsticks}" alt="箸を使う">
             <img class="card-img small" src="${IMG.violin}" alt="バイオリンを弾く">
             <img class="card-img small" src="${IMG.satoyama}" alt="里山でくらす">
           </div>
-          <div class="pill">点を集める。でも森も守る。</div>
+          <div class="pill" style="background:var(--red-soft);font-size:clamp(.9rem,1.9vw,1.25rem);text-align:center">でも、森の使いすぎには注意！！</div>
         </div>
       </div>`
   },
   {
-    kicker:'ラウンドのはじめ',
-    title:'森には、木・水・土がある',
-    captions:[
-      'ターンカードに書かれた数だけ、木・水・土を森に追加します。',
-      'つかれた森のときは、追加する数が それぞれ１ずつ へります（＋5→＋4）。'
-    ],
+    kicker:'ルール説明',
+    phase:'intro',
+    title:'',
+    captions:[],
+    duration:3000,
     visual:`
-      <div class="round-add">
-        <div class="board-wrap step" data-step="0">
-          <img class="board" src="${IMG.board}" alt="森林ボード">
-          <img class="state-on-board" src="${IMG.healthyState}" alt="森の状態カード（元気な森）">
-          <img class="turn-card" src="${IMG.turn1}" alt="ターンカード">
-          <div class="board-tag state">森の状態カード</div>
-          <div class="board-tag turn">ターンカード</div>
-          ${['wood','wood','wood','wood','wood'].map((k,i)=>`<img class="hex-token wood-zone" style="transform:translate(${i*18}px,${(i%2)*18}px)" src="${IMG.wood}" alt="木">`).join('')}
-          ${['water','water','water','water','water'].map((k,i)=>`<img class="hex-token water-zone" style="transform:translate(${i*18}px,${(i%2)*18}px)" src="${IMG.water}" alt="水">`).join('')}
-          ${['soil','soil','soil','soil','soil'].map((k,i)=>`<img class="hex-token soil-zone" style="transform:translate(${i*18}px,${(i%2)*18}px)" src="${IMG.soil}" alt="土">`).join('')}
-          <div class="add-badge wood step" data-step="1">＋5</div>
-          <div class="add-badge water step" data-step="1">＋5</div>
-          <div class="add-badge soil step" data-step="1">＋5</div>
+      <div class="table" style="align-self:center;flex-direction:column;gap:26px">
+        <img class="card-img hero" src="${IMG.mascot}" alt="ゲームのマスコット">
+        <div class="pill hot" style="font-size:clamp(1.5rem,3.6vw,2.8rem);line-height:1.35;padding:16px 30px;border-radius:26px;text-align:center">それでは、ゲームのルールを<br>説明します！</div>
+      </div>`
+  },
+  {
+    kicker:'ゲームのじゅんび',
+    phase:'setup',
+    title:'ターンカードを1枚めくって、スタート',
+    captions:[],
+    visual:`
+      <div class="board-scene" style="align-self:center">
+        <div class="turn-flip-col step" data-step="0">
+          <div class="turn-flip flip-anchor">
+            <div class="flip-card step" data-step="1">
+              <img class="flip-face front" src="${IMG.turnBack}" alt="ターンカード（裏面）">
+              <img class="flip-face back" src="${IMG.turn1}" alt="ターンカード（表面）">
+            </div>
+            <div class="num-ring step" data-step="2"></div>
+          </div>
+          <div class="pill">裏 → 表に めくる</div>
         </div>
-        <div class="round-note sticker step" data-step="2">
-          <div class="note-title">ターンカードの数だけ追加</div>
-          <div class="cmp-row">
-            <img class="mini-state" src="${IMG.healthyState}" alt="元気な森">
-            <div>元気な森<br>木・水・土 ＋5</div>
+        <div class="flow-arrow step" data-step="2">
+          <div class="pill hot">数字のぶん<br>トークンを置く</div>
+          <div class="shaft"></div>
+        </div>
+        ${renderBoard({
+          state:'healthy',
+          wood:[], water:[], soil:[],
+          overlay:`
+            ${addTokens('wood-zone cluster','wood',5,3)}
+            ${addTokens('water-zone cluster','water',5,3)}
+            ${addTokens('soil-zone cluster','soil',5,3)}
+            <div class="add-badge wood step" data-step="3">＋5</div>
+            <div class="add-badge water step" data-step="3">＋5</div>
+            <div class="add-badge soil step" data-step="3">＋5</div>`,
+          cls:'step keep-order', dataStep:0
+        })}
+      </div>`
+  },
+  {
+    kicker:'プレーヤーのアクション①',
+    phase:'turn',
+    title:'',
+    captions:[],
+    duration:3000,
+    visual:`
+      <div class="table" style="align-self:center;flex-direction:column;flex-wrap:nowrap;max-height:min(560px,72vh);gap:22px">
+        <img class="card-img hero" style="height:min(180px,26vh);width:auto;aspect-ratio:650/1075" src="${IMG.mascot}" alt="ゲームのマスコット">
+        <div class="pill" style="font-size:clamp(1.05rem,2.2vw,1.6rem)">プレーヤーのアクション①</div>
+        <div class="pill hot" style="font-size:clamp(1.5rem,3.6vw,2.8rem);line-height:1.35;padding:16px 30px;border-radius:26px;text-align:center">「しげんかくとくフェーズ」</div>
+      </div>`
+  },
+  {
+    kicker:'カードをえらぶ',
+    phase:'turn',
+    title:'手札から1枚えらんで、裏がしで自分の前に置く',
+    captions:[],
+    visual:`
+      <div class="board-scene" style="align-self:center">
+        <div class="choice-pack step" data-step="0">
+          <div class="pill">あなたの手札</div>
+          <div class="hand-fan">
+            <div class="fan-card" style="transform:rotate(-12deg) translateY(16px)">
+              <img class="card-img small" src="${IMG.n1}" alt="数字カード1">
+            </div>
+            <div class="fan-card" style="transform:rotate(-8deg) translateY(7px)">
+              <img class="card-img small" src="${IMG.n2}" alt="数字カード2">
+            </div>
+            <div class="fan-card picked" style="transform:rotate(-4deg) translateY(2px)">
+              <img class="card-img small" src="${IMG.n3}" alt="数字カード3">
+              <div class="num-ring step" data-step="1" style="left:-5%;right:-5%;top:-3%;bottom:-3%;border-radius:12px"></div>
+            </div>
+            <div class="fan-card">
+              <img class="card-img small" src="${IMG.n4}" alt="数字カード4">
+            </div>
+            <div class="fan-card" style="transform:rotate(4deg) translateY(2px)">
+              <img class="card-img small" src="${IMG.n5}" alt="数字カード5">
+            </div>
+            <div class="fan-card" style="transform:rotate(8deg) translateY(7px)">
+              <img class="card-img small" src="${IMG.n6}" alt="数字カード6">
+            </div>
+            <div class="fan-card" style="transform:rotate(12deg) translateY(16px)">
+              <img class="card-img small" src="${IMG.recov}" alt="回復カード">
+            </div>
           </div>
-          <div class="cmp-row tired">
-            <img class="mini-state" src="${IMG.tiredState}" alt="つかれた森">
-            <div>つかれた森は 各 <span class="down1">−1</span><br>＋5 → <span class="down1">＋4</span></div>
+          <div class="pill">数字カード ＋ 回復カード</div>
+        </div>
+        <div class="flow-arrow step" data-step="1" style="margin-top:0">
+          <div class="pill hot">1枚えらんで</div>
+          <div class="shaft"></div>
+        </div>
+        <div class="turn-flip-col step" data-step="1">
+          <div class="turn-flip flip-anchor">
+            <div class="flip-card step" data-step="2">
+              <img class="flip-face front" src="${IMG.n3}" alt="えらんだ数字カード">
+              <img class="flip-face back" src="${IMG.numBack}" alt="数字カードの裏面">
+            </div>
           </div>
+          <div class="pill hot">裏にして 自分の前に置く</div>
         </div>
       </div>`
   },
   {
     kicker:'カードを出す',
-    title:'数字カードを出して、順番に取る',
-    captions:[
-      '数字カードを出した人から、森ボードの木・水・土を順番に取っていきます。',
-      '回復カードなら、木・水・土を森に足してから、好きなしげんを1個受け取ります。'
-    ],
+    phase:'turn',
+    title:'手番順にカードを表にして、トークンを置く',
+    captions:[],
     visual:`
-      <div class="round-flow">
+      <div class="board-scene" style="align-self:center">
+        <div class="side-labels step" data-step="1">
+          <div class="pill hot">① 順番に うらがえす</div>
+          <div class="pill hot">② 数字の数だけ<br>しげん置き場に置く</div>
+        </div>
         <div class="flow-side">
-          <div class="flow-player you step" data-step="0">
+          <div class="flow-player you solo step" data-step="0">
+            <div class="turn-badge">①</div>
             <p class="flow-name">あなた</p>
-            <img class="flow-card" src="${IMG.n2}" alt="利用カード2">
-            <div class="taken-goods step" data-step="1">
-              <div class="take-note">2個取る</div>
-              ${tokenLine(['wood','water'])}
+            <div class="flow-flip flip-anchor">
+              <div class="flip-card step" data-step="1">
+                <img class="flip-face front" src="${IMG.numBack}" alt="裏がしのカード">
+                <img class="flip-face back" src="${IMG.n2}" alt="数字カード2">
+              </div>
+              <div class="place-slots">
+                <img class="drop-token step" data-step="1" src="${IMG.wood}" alt="木">
+                <img class="drop-token step" data-step="1" src="${IMG.water}" alt="水">
+              </div>
             </div>
+            <div class="take-note step" data-step="1">2個置く</div>
           </div>
-          <div class="flow-player step" data-step="0">
+          <div class="flow-player solo step" data-step="0">
+            <div class="turn-badge">②</div>
             <p class="flow-name">みさき</p>
-            <img class="flow-card" src="${IMG.n4}" alt="利用カード4">
-            <div class="taken-goods step" data-step="2">
-              <div class="take-note">4個取る</div>
-              ${tokenLine(['wood','wood','soil','soil'])}
+            <div class="flow-flip flip-anchor">
+              <div class="flip-card step" data-step="2">
+                <img class="flip-face front" src="${IMG.numBack}" alt="裏がしのカード">
+                <img class="flip-face back" src="${IMG.n4}" alt="数字カード4">
+              </div>
+              <div class="place-slots">
+                <img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木">
+                <img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木">
+                <img class="drop-token step" data-step="2" src="${IMG.soil}" alt="土">
+                <img class="drop-token step" data-step="2" src="${IMG.soil}" alt="土">
+              </div>
             </div>
+            <div class="take-note step" data-step="2">4個置く</div>
           </div>
         </div>
-        <div class="flow-board step" data-step="0">
-          <img class="board" src="${IMG.board}" alt="森林ボード">
-          <div class="turn-order">順番に取る</div>
-          ${zoneTokens('wood-zone small-token','wood',[1,2,2,3,null],7)}
-          ${zoneTokens('water-zone small-token','water',[1,null,3,3,null],7)}
-          ${zoneTokens('soil-zone small-token','soil',[null,2,2,3,3],7)}
-          <div class="recovery-burst step" data-step="3">
-            <div class="take-note">ゆい：森に＋1ずつ</div>
-            ${tokenLine(['wood','water','soil'])}
-          </div>
-        </div>
+        ${renderBoard({
+          state:'healthy',
+          tokenCls:'small-token',
+          wood:[1,2,2,3,null],
+          water:[1,null,3,3,null],
+          soil:[null,2,2,3,3],
+          tags:'',
+          overlay:`
+            <div class="recovery-burst step" data-step="4">
+              <div class="take-note">ゆい：森に＋1ずつ</div>
+              ${tokenLine(['wood','water','soil'])}
+            </div>`,
+          cls:'step', dataStep:0
+        })}
         <div class="flow-side">
-          <div class="flow-player step" data-step="0">
+          <div class="flow-player solo step" data-step="0">
+            <div class="turn-badge">③</div>
             <p class="flow-name">けん</p>
-            <img class="flow-card" src="${IMG.n5}" alt="利用カード5">
-            <div class="taken-goods step" data-step="3">
-              <div class="take-note">5個取る</div>
-              ${tokenLine(['wood','water','water','soil','soil'])}
+            <div class="flow-flip flip-anchor">
+              <div class="flip-card step" data-step="3">
+                <img class="flip-face front" src="${IMG.numBack}" alt="裏がしのカード">
+                <img class="flip-face back" src="${IMG.n5}" alt="数字カード5">
+              </div>
+              <div class="place-slots">
+                <img class="drop-token step" data-step="3" src="${IMG.wood}" alt="木">
+                <img class="drop-token step" data-step="3" src="${IMG.water}" alt="水">
+                <img class="drop-token step" data-step="3" src="${IMG.water}" alt="水">
+                <img class="drop-token step" data-step="3" src="${IMG.soil}" alt="土">
+                <img class="drop-token step" data-step="3" src="${IMG.soil}" alt="土">
+              </div>
             </div>
+            <div class="take-note step" data-step="3">5個置く</div>
           </div>
           <div class="flow-player active step" data-step="0">
+            <div class="turn-badge">④</div>
             <p class="flow-name">ゆいの手番</p>
-            <img class="flow-card" src="${IMG.recov}" alt="森を元気にするカード">
+            <div class="flow-flip flip-anchor">
+              <div class="flip-card step" data-step="4">
+                <img class="flip-face front" src="${IMG.numBack}" alt="裏がしのカード">
+                <img class="flip-face back" src="${IMG.recov}" alt="森を元気にするカード">
+              </div>
+            </div>
             <div class="taken-goods recovery step" data-step="4">
               <div class="recovery-lines">
                 <div class="take-note">回復カード</div>
                 <div class="recover-plus">森に＋ ${tokenLine(['wood','water','soil'])}</div>
-                <div class="recover-pick">${token('wood', 'small')} 木ブロックを1個取る</div>
+                <div class="recover-pick">${token('wood', 'small')} 木ブロックを1個もらう</div>
               </div>
             </div>
           </div>
         </div>
-      </div>`
-  },
-  {
-    kicker:'カードを選ぶ',
-    title:'数字カードか、森を元気にするカード',
-    captions:[
-      '数字カードは、森から取りたいしげんの合計数です。',
-      '森を元気にするカードを選ぶこともできます。'
-    ],
-    visual:`
-      <div class="table">
-        <div class="choice-pack step" data-step="0">
-          <div class="pill">数字カード</div>
-          <div class="card-row">
-            <img class="card-img small" src="${IMG.n1}" alt="利用カード1">
-            <img class="card-img small" src="${IMG.n2}" alt="利用カード2">
-            <img class="card-img small" src="${IMG.n3}" alt="利用カード3">
-            <img class="card-img small" src="${IMG.n4}" alt="利用カード4">
-            <img class="card-img small" src="${IMG.n5}" alt="利用カード5">
-            <img class="card-img small" src="${IMG.n6}" alt="利用カード6">
-          </div>
-        </div>
-        <div class="choice-pack step" data-step="1">
-          <div class="pill">森を元気にするカード</div>
-          <img class="card-img" src="${IMG.recov}" alt="森を元気にするカード">
-        </div>
-      </div>`
-  },
-  {
-    kicker:'順番に公開',
-    title:'数字の数だけ、しげんを取る',
-    captions:[
-      'たとえば「3」なら、木・水・土を合わせて3個 取ります。',
-      '取ったしげんは、数字カードの「しげん置き場」に1つずつ置きます。'
-    ],
-    visual:`
-      <div class="place-demo">
-        <div class="person step" data-step="0">
-          <p class="person-name">みさき「3」</p>
-          <div class="place-card-wrap">
-            <img class="card-img" src="${IMG.n3}" alt="数字カード3（しげん置き場つき）">
-            <span class="drop-slot d1"><img class="drop-token step" data-step="1" src="${IMG.wood}" alt="木"></span>
-            <span class="drop-slot d2"><img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木"></span>
-            <span class="drop-slot d3"><img class="drop-token step" data-step="3" src="${IMG.water}" alt="水"></span>
-          </div>
-        </div>
-        <div class="place-guide sticker step" data-step="1">
-          <div class="pill hot">森から取ったしげんを</div>
-          <div class="arrow">↓</div>
-          <div class="pill">数字カードの<br>「しげん置き場」へ</div>
-        </div>
+        <svg class="arrow-layer" aria-hidden="true"></svg>
       </div>`
   },
   {
     kicker:'大事なルール',
+    phase:'turn',
     title:'同じ数字は、横取り',
-    captions:[
-      '後から同じ数字を出した人が、先に取っていたしげんを横取りします。',
-      '横取りされるのは、このラウンドのカードの上にあるしげんだけです。'
-    ],
+    captions:[],
     visual:`
-      <div class="take-layout">
+      <div class="board-scene" style="align-self:center">
         <div class="person step" data-step="0">
           <p class="person-name">みさき（先に取った）</p>
-          <img class="card-img small" src="${IMG.n3}" alt="利用カード3">
-          <div class="card-pad steal-from">
-            ${tokenLine(['wood','wood','water'])}
+          <div class="place-card-wrap small">
+            <img class="card-img" src="${IMG.n3}" alt="数字カード3（しげん置き場つき）">
+            <div class="place-slots">
+              <img class="drop-token" src="${IMG.wood}" alt="木">
+              <img class="drop-token" src="${IMG.wood}" alt="木">
+              <img class="drop-token" src="${IMG.water}" alt="水">
+            </div>
             <div class="taken-stamp step" data-step="2">とられた！</div>
           </div>
         </div>
-        <div class="steal-mid step" data-step="1">
-          <div class="grab-hand">✋</div>
-          <div class="pill hot">よこどり！</div>
-          <div class="arrow">→</div>
-        </div>
+        ${renderBoard({
+          state:'healthy',
+          tokenCls:'small-token',
+          wood:[null,null,null,null,null],
+          water:[null,null,null,null,null],
+          soil:[null,null,null,null,null],
+          tags:`<div class="turn-order step" data-step="1">✋ 同じ「3」が重なった！</div>`,
+          cls:'step', dataStep:0
+        })}
         <div class="person step" data-step="1">
           <p class="person-name">けん（同じ「3」）</p>
-          <img class="card-img small" src="${IMG.n3}" alt="利用カード3">
-          <div class="card-pad steal-to">
-            <div class="moving-res step" data-step="2">${tokenLine(['wood','wood','water'])}</div>
-            <div class="pill got step" data-step="2">ゲット！</div>
+          <div class="place-card-wrap small">
+            <img class="card-img" src="${IMG.n3}" alt="数字カード3（しげん置き場つき）">
+            <div class="place-slots">
+              <img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木">
+              <img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木">
+              <img class="drop-token step" data-step="2" src="${IMG.water}" alt="水">
+            </div>
           </div>
+          <div class="pill got step" data-step="2">ゲット！</div>
         </div>
       </div>`
   },
   {
     kicker:'森のようす',
+    phase:'exception',
     title:'足りないと、つかれた森になる',
-    captions:[
-      '森にしげんが足りない時は、残っている分だけ取ります。',
-      '足りなくなったら、森は「つかれた森」になります。'
-    ],
+    captions:[],
     visual:`
-      <div class="state-flow">
-        <div class="state-card healthy step" data-step="0">
-          <img class="state-tile" src="${IMG.healthyState}" alt="元気な森">
-          <div class="pill">元気な森</div>
+      <div class="board-scene">
+        ${renderBoard({
+          state:'healthy',
+          hideState:true,
+          tokenCls:'small-token',
+          wood:[2,2],
+          water:[2],
+          soil:[2,2],
+          overlay:`
+            <div class="state-on-board flip-anchor">
+              <div class="flip-card step" data-step="4">
+                <img class="flip-face front" src="${IMG.healthyState}" alt="元気な森">
+                <img class="flip-face back" src="${IMG.tiredState}" alt="つかれた森">
+              </div>
+            </div>
+            <div class="flip-ring step" data-step="4">
+              <div class="count-badge">ひっくり返して、つかれた森になる</div>
+            </div>
+            <div class="count-ring step" data-step="0">
+              <div class="count-badge">トークン 計5個</div>
+            </div>
+            <div class="ng-mark step" data-step="3" style="left:46%;top:62%">✕</div>`,
+          cls:'step', dataStep:0
+        })}
+        <div class="person step" data-step="0" style="max-width:min(34vw,250px)">
+          <p class="person-name">けん「6」</p>
+          <div class="place-card-wrap small" style="height:min(22vh,175px)">
+            <div class="flip-anchor" style="position:absolute;inset:0">
+              <div class="flip-card step" data-step="1">
+                <img class="flip-face front" src="${IMG.numBack}" alt="裏がしのカード">
+                <img class="flip-face back" src="${IMG.n6}" alt="数字カード6（しげん置き場つき）">
+              </div>
+            </div>
+            <div class="place-slots">
+              <img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木">
+              <img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木">
+              <img class="drop-token step" data-step="2" src="${IMG.water}" alt="水">
+              <img class="drop-token step" data-step="2" src="${IMG.soil}" alt="土">
+              <img class="drop-token step" data-step="2" src="${IMG.soil}" alt="土">
+            </div>
+            <div class="num-ring step" data-step="2" style="left:-4%;right:-4%;top:-3%;bottom:-3%;border-radius:14px"></div>
+          </div>
+          <div class="pill hot step" data-step="2" style="font-size:clamp(.8rem,1.5vw,1rem)">6個ほしいのに、5個しか取れない…</div>
+          <div class="pill step" data-step="3" style="background:var(--red);color:#fff;font-size:clamp(1rem,2.2vw,1.35rem);margin-top:8px">しげんがたりない！！</div>
         </div>
-        <div class="arrow step" data-step="1">→</div>
-        <div class="state-card tired step" data-step="1">
-          <img class="state-tile" src="${IMG.tiredState}" alt="つかれた森">
-          <div class="pill">つかれた森</div>
-        </div>
-        <div class="choice-pack step" data-step="2">
+        <div class="choice-pack step" data-step="5">
           <img class="card-img small" src="${IMG.warn}" alt="警告カード">
-          <div class="pill">足りなくさせた人は警告</div>
+          <div class="pill hot" style="font-size:clamp(.8rem,1.5vw,1rem)">足りなくさせた人は警告</div>
+        </div>
+      </div>`
+  },
+  {
+    kicker:'森のようす',
+    phase:'exception',
+    title:'警告が3枚で、退場になる',
+    captions:[],
+    visual:`
+      <div class="table" style="align-self:center">
+        <div class="card-row step" data-step="0">
+          <img class="card-img small" src="${IMG.warn}" alt="警告カード 1枚目">
+          <img class="card-img small step" data-step="1" src="${IMG.warn}" alt="警告カード 2枚目">
+          <img class="card-img small step" data-step="2" src="${IMG.warn}" alt="警告カード 3枚目">
+        </div>
+        <div class="pill hot step" data-step="2">３枚たまった！</div>
+        <div class="person step" data-step="3">
+          <p class="person-name">けん</p>
+          <div class="card-pad steal-from">
+            <img class="card-img" src="${IMG.exit}" alt="退場カード">
+            <div class="taken-stamp step" data-step="4">退場</div>
+          </div>
         </div>
       </div>`
   },
   {
     kicker:'森を元気にする',
-    title:'森にしげんを戻そう',
-    captions:[
-      '森を元気にするカードを出すと、つかれた森を 元気な森に戻せます。',
-      '木・水・土を1つずつ森林ボードに戻し、そのあと 好きなしげんを1つ もらえます。'
-    ],
+    phase:'exception',
+    title:'森を回復させよう',
+    captions:[],
     visual:`
-      <div class="recover-flow">
-        <div class="board-wrap step" data-step="0">
-          <img class="board" src="${IMG.board}" alt="森林ボード">
-          <img class="state-on-board" src="${IMG.healthyState}" alt="森の状態カード（元気な森）">
-          <div class="board-tag state">元気な森にもどる</div>
-          <img class="hex-token wood-zone step" data-step="1" src="${IMG.wood}" alt="木">
-          <img class="hex-token water-zone step" data-step="1" src="${IMG.water}" alt="水">
-          <img class="hex-token soil-zone step" data-step="1" src="${IMG.soil}" alt="土">
-          <div class="add-badge wood step" data-step="1">＋1</div>
-          <div class="add-badge water step" data-step="1">＋1</div>
-          <div class="add-badge soil step" data-step="1">＋1</div>
-        </div>
-        <div class="recover-side">
-          <div class="recover-card-box step" data-step="0">
-            <img class="card-img" src="${IMG.recovWater}" alt="森を元気にするカード">
-            <div class="pill">このカードを出す</div>
-          </div>
-          <div class="get-one sticker step" data-step="2">
-            <div class="pill hot">好きなしげんを1つ もらう</div>
-            <div class="get-choice">
-              <img src="${IMG.wood}" alt="木">
-              <img src="${IMG.water}" alt="水">
-              <img src="${IMG.soil}" alt="土">
+      <div class="board-scene" style="align-self:center">
+        ${renderBoard({
+          state:'healthy',
+          hideState:true,
+          wood:[], water:[], soil:[],
+          overlay:`
+            <div class="state-on-board flip-anchor">
+              <div class="flip-card step" data-step="2">
+                <img class="flip-face front" src="${IMG.tiredState}" alt="つかれた森">
+                <img class="flip-face back" src="${IMG.healthyState}" alt="元気な森">
+              </div>
             </div>
-            <div class="pill">→ どれか1つ 手もとへ</div>
+            ${addTokens('wood-zone small-token','wood',1,3)}
+            ${addTokens('water-zone small-token','water',1,3)}
+            ${addTokens('soil-zone small-token','soil',1,3)}
+            <div class="add-badge wood step" data-step="3">＋1</div>
+            <div class="add-badge water step" data-step="3">＋1</div>
+            <div class="add-badge soil step" data-step="3">＋1</div>`,
+          cls:'step', dataStep:0
+        })}
+        <div class="recover-side" style="flex-direction:row;align-items:center;gap:18px">
+          <div class="turn-flip-col step" data-step="0">
+            <div class="turn-flip flip-anchor">
+              <div class="flip-card step" data-step="1">
+                <img class="flip-face front" src="${IMG.numBack}" alt="回復カード（裏面）">
+                <img class="flip-face back" src="${IMG.recov}" alt="回復カード（表面）">
+              </div>
+            </div>
+            <div class="pill">数字カードのかわりに<br>回復カードを出す</div>
+          </div>
+          <div class="get-one sticker step" data-step="4">
+            <div class="resource-line">
+              ${token('wood')}${token('water')}${token('soil')}
+            </div>
+            <div class="pill hot">しげんを ひとつ かくとく！</div>
           </div>
         </div>
       </div>`
   },
   {
+    kicker:'プレーヤーのアクション②',
+    phase:'build',
+    title:'',
+    captions:[],
+    duration:3000,
+    visual:`
+      <div class="table" style="align-self:center;flex-direction:column;flex-wrap:nowrap;max-height:min(560px,72vh);gap:22px">
+        <img class="card-img hero" style="height:min(180px,26vh);width:auto;aspect-ratio:650/1075" src="${IMG.mascot}" alt="ゲームのマスコット">
+        <div class="pill" style="font-size:clamp(1.05rem,2.2vw,1.6rem)">プレーヤーのアクション②</div>
+        <div class="pill hot" style="font-size:clamp(1.5rem,3.6vw,2.8rem);line-height:1.35;padding:16px 30px;border-radius:26px;text-align:center">「作るフェーズ」</div>
+      </div>`
+  },
+  {
     kicker:'ラウンドの終わり',
+    phase:'build',
     title:'つくるカードを完成させる',
     captions:[
       '集めたしげんを使って、つくるカードを作ります。',
@@ -1147,37 +1806,99 @@ const SCENES = [
       </div>`
   },
   {
-    kicker:'6ラウンドのあと',
-    title:'森が元気なら、点数勝負',
-    captions:[
-      '最後に森が元気な森なら、つくるカードの点数を合計します。',
-      '点数がいちばん高い人が勝ちです。'
-    ],
+    kicker:'全体の流れ',
+    phase:'intro',
+    title:'全体の流れ',
+    captions:[],
     visual:`
-      <div class="result-panels">
+      <div class="loop-wrap" style="align-self:center">
+        <div class="loop-flow single-row">
+          <div class="loop-step step" data-step="0">
+            <img class="card-img small" src="${IMG.numBack}" alt="数字カード（裏面）">
+            <div class="pill">①数字カード/<br>回復カードを選ぶ</div>
+          </div>
+          <div class="arrow step" data-step="0">→</div>
+          <div class="loop-step step" data-step="1">
+            <div class="flip-anchor">
+              <div class="flip-card step" data-step="1">
+                <img class="flip-face front" src="${IMG.numBack}" alt="数字カード（裏面）">
+                <img class="flip-face back" src="${IMG.n3}" alt="数字カード（表面）">
+              </div>
+            </div>
+            <div class="pill">②手番順に公開</div>
+          </div>
+          <div class="arrow step" data-step="1">→</div>
+          <div class="loop-step step" data-step="2">
+            ${tokenLine(['wood','water','soil'])}
+            <div class="pill" style="white-space:nowrap">③取る/回復する</div>
+          </div>
+          <div class="arrow step" data-step="2">→</div>
+          <div class="loop-step step" data-step="3">
+            <img class="card-img small" src="${IMG.chopsticks}" alt="つくるカード">
+            <div class="pill">④つくる</div>
+          </div>
+          <div class="arrow step" data-step="3">→</div>
+          <div class="loop-step step" data-step="4">
+            <img class="state-tile mini" src="${IMG.healthyState}" alt="森の状態">
+            <div class="pill">⑤森をチェック</div>
+          </div>
+        </div>
+        <div class="pill hot step" data-step="5" style="font-size:clamp(1.25rem,3vw,2.05rem);padding:15px 28px">これを <span style="font-size:1.4em;color:var(--red)">6</span>ラウンド くりかえす</div>
+      </div>`
+  },
+  {
+    kicker:'かちまけ',
+    phase:'end',
+    title:'',
+    captions:[],
+    duration:3000,
+    visual:`
+      <div class="table" style="align-self:center;flex-direction:column;gap:26px">
+        <img class="card-img hero" src="${IMG.mascot}" alt="ゲームのマスコット">
+        <div class="pill hot" style="font-size:clamp(1.5rem,3.6vw,2.8rem);line-height:1.35;padding:16px 30px;border-radius:26px;text-align:center">「かちまけ」</div>
+      </div>`
+  },
+  {
+    kicker:'かちまけ',
+    phase:'end',
+    title:'森が元気なら、点数勝負',
+    captions:[],
+    visual:`
+      <div class="result-panels" style="align-self:center">
         <div class="result-panel ok sticker step" data-step="0">
           <img class="state-tile" src="${IMG.healthyState}" alt="元気な森">
           <div class="large-word">元気な森</div>
         </div>
         <div class="result-panel sticker step" data-step="1">
           <div class="card-row">
-            <img class="card-img small" src="${IMG.sauna}" alt="サウナに入る">
-            <img class="card-img small" src="${IMG.washoku}" alt="和食を作る">
-            <img class="card-img small" src="${IMG.satoyama}" alt="里山でくらす">
+            <div class="result-card">
+              <img class="card-img small" src="${IMG.chopsticks}" alt="箸を使う">
+              <div class="card-num-ring"></div>
+            </div>
+            <div class="result-card">
+              <img class="card-img small" src="${IMG.violin}" alt="バイオリンを弾く">
+              <div class="card-num-ring"></div>
+            </div>
+            <div class="result-card">
+              <img class="card-img small" src="${IMG.sauna}" alt="サウナに入る">
+              <div class="card-num-ring"></div>
+            </div>
+            <div class="result-card">
+              <img class="card-img small" src="${IMG.washoku}" alt="和食を作る">
+              <div class="card-num-ring"></div>
+            </div>
           </div>
-          <div class="large-word">点数勝負</div>
+          <div class="large-word">得点は<span class="count-num step" data-step="2" data-count-to="16">0</span>点！</div>
         </div>
       </div>`
   },
   {
-    kicker:'さいごに',
+    kicker:'かちまけ',
+    phase:'end',
     title:'森がつかれたままなら、全員脱落',
-    captions:[
-      '最後に森がつかれた森のままだと、どれだけ点を取っていても勝者はいません。',
-      '自分の点数と、みんなの森。両方を見ながら遊びましょう。'
-    ],
+    captions:[],
     visual:`
-      <div class="result-panels">
+      <div class="result-panels" style="align-self:center">
         <div class="result-panel bad sticker step" data-step="0">
           <img class="state-tile" src="${IMG.tiredState}" alt="つかれた森">
           <div class="large-word">全員脱落</div>
@@ -1192,10 +1913,11 @@ const SCENES = [
 
 let current = 0;
 let playing = !new URLSearchParams(location.search).has('paused');
-let timers = [];
 let rafId = null;
-let progressStart = 0;
-let progressDuration = 1;
+let elapsed = 0;
+let segmentStart = 0;
+let duration = 1;
+let schedule = [];
 const stage = document.getElementById('stage');
 const bar = document.getElementById('bar');
 const dots = document.getElementById('dots');
@@ -1205,10 +1927,11 @@ const playBtn = document.getElementById('playBtn');
 function buildSlide(scene, index){
   const el = document.createElement('section');
   el.className = 'slide';
+  el.dataset.phase = scene.phase || '';
   el.innerHTML = `
     <header class="head">
       <img class="mascot" src="${IMG.mascot}" alt="">
-      <div>
+      <div class="head-info">
         <div class="kicker">${scene.kicker}</div>
         <h1 class="title">${scene.title}</h1>
       </div>
@@ -1221,34 +1944,46 @@ function buildSlide(scene, index){
   `;
   return el;
 }
-function clearTimers(){
-  timers.forEach(clearTimeout);
-  timers = [];
-  if(rafId) cancelAnimationFrame(rafId);
-  rafId = null;
-}
 function renderDots(){
   dots.innerHTML = SCENES.map((_,i)=>`<button class="dot ${i===current?'active':''}" type="button" aria-label="${i+1}枚目へ" data-go="${i}"></button>`).join('');
   dots.querySelectorAll('.dot').forEach(dot => {
     dot.addEventListener('click', () => goTo(Number(dot.dataset.go)));
   });
 }
-function animateProgress(duration){
-  progressStart = performance.now();
-  progressDuration = duration;
-  const tick = now => {
-    if(!playing){
-      rafId = requestAnimationFrame(tick);
-      return;
+function cancelTick(){
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId = null;
+}
+// 経過時間(elapsed)を基準に、進捗バー・ステップ表示・カウントアップ数字を1本のrAFループで進める。
+// 一時停止はこのループを止めるだけなので、再開すると止めた場所から続きになる。
+function tick(now){
+  elapsed = now - segmentStart;
+  const pct = Math.min(100, (elapsed / duration) * 100);
+  bar.style.width = pct + '%';
+  schedule.forEach(item => {
+    if(!item.shown && elapsed >= item.time){
+      item.shown = true;
+      item.el.classList.add('show');
     }
-    const pct = Math.min(100, ((now - progressStart) / progressDuration) * 100);
-    bar.style.width = pct + '%';
-    if(pct < 100) rafId = requestAnimationFrame(tick);
-  };
+    if(item.countTo != null && elapsed >= item.time){
+      const p = Math.min(1, (elapsed - item.time) / COUNT_DURATION);
+      item.el.textContent = Math.round(p * item.countTo);
+    }
+  });
+  updateArrows();
+  if(elapsed >= duration){
+    if(current < SCENES.length - 1){
+      goTo(current + 1);
+    } else {
+      playing = false;
+      updatePlayButton();
+    }
+    return;
+  }
   rafId = requestAnimationFrame(tick);
 }
 function showSlide(index){
-  clearTimers();
+  cancelTick();
   current = index;
   stage.innerHTML = '';
   const scene = SCENES[index];
@@ -1259,28 +1994,36 @@ function showSlide(index){
   renderDots();
   const stepEls = Array.from(el.querySelectorAll('.step'));
   const capEls = Array.from(el.querySelectorAll('.caption'));
+  schedule = [];
   let maxStep = 0;
   stepEls.forEach(item => {
     const step = Number(item.dataset.step || 0);
     maxStep = Math.max(maxStep, step);
-    timers.push(setTimeout(() => item.classList.add('show'), 360 + step * LINE_GAP));
+    const countTo = item.dataset.countTo != null ? Number(item.dataset.countTo) : null;
+    schedule.push({ time: STEP_BASE + step * LINE_GAP, el: item, shown:false, countTo });
   });
   capEls.forEach((item, i) => {
-    timers.push(setTimeout(() => item.classList.add('show'), 520 + i * LINE_GAP));
+    schedule.push({ time: CAP_BASE + i * LINE_GAP, el: item, shown:false, countTo:null });
   });
   const last = Math.max(maxStep, capEls.length - 1);
-  const duration = 600 + (last + 1) * LINE_GAP + HOLD_AFTER;
-  bar.style.width = '0%';
-  animateProgress(duration);
+  duration = scene.duration != null ? scene.duration : 600 + (last + 1) * LINE_GAP + HOLD_AFTER;
+  elapsed = 0;
   if(playing){
-    timers.push(setTimeout(() => {
-      if(current < SCENES.length - 1) goTo(current + 1);
-      else {
-        playing = false;
-        updatePlayButton();
-      }
-    }, duration));
+    bar.style.width = '0%';
+    segmentStart = performance.now();
+    rafId = requestAnimationFrame(tick);
+  } else {
+    // 一時停止中に移動した場合は、演出を待たずにこのシーンの内容を全部見せる
+    bar.style.width = '0%';
+    schedule.forEach(item => {
+      item.shown = true;
+      item.el.classList.add('show');
+      if(item.countTo != null) item.el.textContent = item.countTo;
+    });
   }
+  // スライドの登場トランジション後に、矢印を実際の位置に合わせて描き直す
+  setTimeout(updateArrows, 60);
+  setTimeout(updateArrows, 480);
 }
 function goTo(index){
   showSlide(Math.max(0, Math.min(SCENES.length - 1, index)));
@@ -1288,6 +2031,7 @@ function goTo(index){
 function updatePlayButton(){
   playBtn.textContent = playing ? '一時停止' : '再生';
   playBtn.classList.toggle('primary', playing);
+  document.body.classList.toggle('paused', !playing);
 }
 document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
 document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
@@ -1299,7 +2043,12 @@ document.getElementById('restartBtn').addEventListener('click', () => {
 playBtn.addEventListener('click', () => {
   playing = !playing;
   updatePlayButton();
-  showSlide(current);
+  if(playing){
+    segmentStart = performance.now() - elapsed;
+    rafId = requestAnimationFrame(tick);
+  } else {
+    cancelTick();
+  }
 });
 document.addEventListener('keydown', e => {
   if(e.key === 'ArrowLeft') goTo(current - 1);
