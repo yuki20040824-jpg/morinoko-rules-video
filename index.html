@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>盗人キッド｜子ども向けルール動画 v2</title>
+<title>もりノコ｜ルール動画</title>
 <style>
 :root{
   --ink:#22201b;
@@ -157,6 +157,9 @@ button{font-family:inherit}
   transition:opacity .45s ease, transform .45s ease;
 }
 .step.show{opacity:1;transform:translateY(0) rotate(0)}
+/* 最初から見えていて、ステップが来ると「使われて」薄くなる要素 */
+.spend{opacity:1;transform:none}
+.spend.show{opacity:.15;transform:none}
 .sticker{
   background:var(--white);
   border:3px solid var(--ink);
@@ -857,6 +860,36 @@ body.paused .flip-card{transition-duration:.001ms}
   border-radius:16px;
   box-shadow:3px 3px 0 var(--ink);
 }
+/* スタートプレイヤーカード：あなたのボックスの右上の角に、名前やカードとかぶらない幅で置く */
+.start-marker{
+  position:absolute;
+  right:-12px;
+  top:-24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  z-index:3;
+}
+.start-marker img{
+  width:clamp(24px,2.8vw,34px);
+  aspect-ratio:650/1075;
+  object-fit:contain;
+  border-radius:5px;
+  transform:rotate(8deg);
+  filter:drop-shadow(2px 2px 0 rgba(34,32,27,.7));
+}
+.start-label{
+  font-size:clamp(.5rem,.9vw,.62rem);
+  line-height:1.2;
+  text-align:center;
+  font-weight:900;
+  background:var(--yellow-soft);
+  border:2px solid var(--ink);
+  border-radius:10px;
+  padding:1px 5px;
+  white-space:nowrap;
+}
 .turn-badge{
   position:absolute;
   left:-12px;
@@ -1173,6 +1206,15 @@ body.paused .flip-card{transition-duration:.001ms}
   filter:drop-shadow(3px 3px 0 rgba(34,32,27,.85));
 }
 body.paused .drip{animation-play-state:paused}
+/* PC画面の半分くらいの中間幅（761〜1180px）だと、board-sceneの4要素（側ラベル＋人物2列＋ボード）が
+   1行に収まらず折り返して縦にあふれてしまうため、この幅域では側ラベルを上の1行にまとめ、
+   残り3カラム（人物列・ボード・人物列）は必ず横に収まる可変幅にする */
+@media (max-width:1180px) and (min-width:761px){
+  .board-scene{gap:clamp(8px,1.6vw,18px)}
+  .side-labels{order:-2;width:100%;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px}
+  .flow-side{width:clamp(146px,19vw,200px);gap:6px}
+  .board-anchor{width:min(26vw,38vh,240px)}
+}
 @media (max-width:760px){
   .slide{inset:10px;gap:8px}
   .head{grid-template-columns:auto 1fr;gap:10px}
@@ -1276,6 +1318,7 @@ const IMG = {
   tiredState: CARD + 'state/tired.jpg',
   warn: CARD + 'もりノコ_カード/警告カード.jpg',
   exit: CARD + 'もりノコ_カード/退場カード.png',
+  startPlayer: 'もりノコ_カード.png',
   chopsticks: CARD + '1.jpg',
   violin: CARD + '2.jpg',
   sauna: CARD + '8.jpg',
@@ -1283,7 +1326,7 @@ const IMG = {
   satoyama: CARD + '15.jpg'
 };
 const PACE = 1.3; // 1.0が元の速さ。大きいほどゆっくり再生される
-const LINE_GAP = Math.round(2200 * PACE);
+const LINE_GAP = Math.round(2200 * PACE) + 1000; // 全スライド共通：ステップ間を+1秒
 const HOLD_AFTER = Math.round(2100 * PACE);
 const STEP_BASE = Math.round(360 * PACE);
 const CAP_BASE = Math.round(520 * PACE);
@@ -1379,7 +1422,7 @@ const SCENES = [
       <div class="table" style="align-self:center;max-height:min(640px,80vh);gap:16px">
         <img class="card-img hero" style="height:min(150px,22vh)" src="${IMG.mascot}" alt="ゲームのマスコット">
         <div class="choice-pack" style="gap:10px">
-          <div class="pill hot" style="font-size:clamp(.95rem,2vw,1.4rem);line-height:1.5;padding:10px 20px;text-align:center">森からしげんを得て、アクションカードを<br>利用して点をかくとくしよう！</div>
+          <div class="pill hot" style="font-size:clamp(.95rem,2vw,1.4rem);line-height:1.5;padding:10px 20px;text-align:center">森からしげんを得て、作るカードを<br>利用して点をかくとくしよう！</div>
           <div class="card-row">
             <img class="card-img small" src="${IMG.chopsticks}" alt="箸を使う">
             <img class="card-img small" src="${IMG.violin}" alt="バイオリンを弾く">
@@ -1406,6 +1449,7 @@ const SCENES = [
     phase:'setup',
     title:'ターンカードを1枚めくって、スタート',
     captions:[],
+    durationDelta:-1000,
     visual:`
       <div class="board-scene" style="align-self:center">
         <div class="turn-flip-col step" data-step="0">
@@ -1452,8 +1496,9 @@ const SCENES = [
   {
     kicker:'カードをえらぶ',
     phase:'turn',
-    title:'手札から1枚えらんで、裏がしで自分の前に置く',
+    title:'手札から1枚えらんで、<br>裏返しで自分の前に置く',
     captions:[],
+    durationDelta:-2000,
     visual:`
       <div class="board-scene" style="align-self:center">
         <div class="choice-pack step" data-step="0">
@@ -1502,8 +1547,9 @@ const SCENES = [
   {
     kicker:'カードを出す',
     phase:'turn',
-    title:'手番順にカードを表にして、トークンを置く',
+    title:'手番順にカードを表にして、<br>トークンを置く',
     captions:[],
+    durationDelta:-1000,
     visual:`
       <div class="board-scene" style="align-self:center">
         <div class="side-labels step" data-step="1">
@@ -1513,6 +1559,10 @@ const SCENES = [
         <div class="flow-side">
           <div class="flow-player you solo step" data-step="0">
             <div class="turn-badge">①</div>
+            <div class="start-marker">
+              <img src="${IMG.startPlayer}" alt="スタートプレイヤーカード">
+              <div class="start-label">スタート<br>プレイヤー</div>
+            </div>
             <p class="flow-name">あなた</p>
             <div class="flow-flip flip-anchor">
               <div class="flip-card step" data-step="1">
@@ -1603,6 +1653,7 @@ const SCENES = [
     phase:'turn',
     title:'同じ数字は、横取り',
     captions:[],
+    durationDelta:-2000,
     visual:`
       <div class="board-scene" style="align-self:center">
         <div class="person step" data-step="0">
@@ -1614,7 +1665,7 @@ const SCENES = [
               <img class="drop-token" src="${IMG.wood}" alt="木">
               <img class="drop-token" src="${IMG.water}" alt="水">
             </div>
-            <div class="taken-stamp step" data-step="2">とられた！</div>
+            <div class="taken-stamp step" data-step="3">とられた！</div>
           </div>
         </div>
         ${renderBoard({
@@ -1623,20 +1674,25 @@ const SCENES = [
           wood:[null,null,null,null,null],
           water:[null,null,null,null,null],
           soil:[null,null,null,null,null],
-          tags:`<div class="turn-order step" data-step="1">✋ 同じ「3」が重なった！</div>`,
+          tags:`<div class="turn-order step" data-step="2">✋ 同じ「3」が重なった！</div>`,
           cls:'step', dataStep:0
         })}
         <div class="person step" data-step="1">
-          <p class="person-name">けん（同じ「3」）</p>
+          <p class="person-name">けん</p>
           <div class="place-card-wrap small">
-            <img class="card-img" src="${IMG.n3}" alt="数字カード3（しげん置き場つき）">
+            <div class="flip-anchor" style="position:absolute;inset:0">
+              <div class="flip-card step" data-step="2">
+                <img class="flip-face front" src="${IMG.numBack}" alt="裏がしのカード">
+                <img class="flip-face back" src="${IMG.n3}" alt="数字カード3（しげん置き場つき）">
+              </div>
+            </div>
             <div class="place-slots">
-              <img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木">
-              <img class="drop-token step" data-step="2" src="${IMG.wood}" alt="木">
-              <img class="drop-token step" data-step="2" src="${IMG.water}" alt="水">
+              <img class="drop-token step" data-step="3" src="${IMG.wood}" alt="木">
+              <img class="drop-token step" data-step="3" src="${IMG.wood}" alt="木">
+              <img class="drop-token step" data-step="3" src="${IMG.water}" alt="水">
             </div>
           </div>
-          <div class="pill got step" data-step="2">ゲット！</div>
+          <div class="pill got step" data-step="3">ゲット！</div>
         </div>
       </div>`
   },
@@ -1645,6 +1701,7 @@ const SCENES = [
     phase:'exception',
     title:'足りないと、つかれた森になる',
     captions:[],
+    durationDelta:-2000,
     visual:`
       <div class="board-scene">
         ${renderBoard({
@@ -1702,6 +1759,8 @@ const SCENES = [
     phase:'exception',
     title:'警告が3枚で、退場になる',
     captions:[],
+    stepGap:LINE_GAP - 1000,
+    durationDelta:-2000,
     visual:`
       <div class="table" style="align-self:center">
         <div class="card-row step" data-step="0">
@@ -1724,6 +1783,7 @@ const SCENES = [
     phase:'exception',
     title:'森を回復させよう',
     captions:[],
+    stepGap:LINE_GAP - 1000,
     visual:`
       <div class="board-scene" style="align-self:center">
         ${renderBoard({
@@ -1737,12 +1797,18 @@ const SCENES = [
                 <img class="flip-face back" src="${IMG.healthyState}" alt="元気な森">
               </div>
             </div>
+            <div class="flip-ring step" data-step="2">
+              <div class="count-badge">つかれた森を 元気な森に！</div>
+            </div>
             ${addTokens('wood-zone small-token','wood',1,3)}
             ${addTokens('water-zone small-token','water',1,3)}
             ${addTokens('soil-zone small-token','soil',1,3)}
             <div class="add-badge wood step" data-step="3">＋1</div>
             <div class="add-badge water step" data-step="3">＋1</div>
-            <div class="add-badge soil step" data-step="3">＋1</div>`,
+            <div class="add-badge soil step" data-step="3">＋1</div>
+            <div class="count-ring step" data-step="3">
+              <div class="count-badge">トークンを一つずつ追加！</div>
+            </div>`,
           cls:'step', dataStep:0
         })}
         <div class="recover-side" style="flex-direction:row;align-items:center;gap:18px">
@@ -1757,7 +1823,7 @@ const SCENES = [
           </div>
           <div class="get-one sticker step" data-step="4">
             <div class="resource-line">
-              ${token('wood')}${token('water')}${token('soil')}
+              ${token('wood')}
             </div>
             <div class="pill hot">しげんを ひとつ かくとく！</div>
           </div>
@@ -1781,27 +1847,95 @@ const SCENES = [
     kicker:'ラウンドの終わり',
     phase:'build',
     title:'つくるカードを完成させる',
-    captions:[
-      '集めたしげんを使って、つくるカードを作ります。',
-      '資源が足りれば、自分の番で何枚でも作れます。'
-    ],
+    captions:[],
+    durationDelta:-2000,
     visual:`
-      <div class="make-grid">
-        <div class="make-item sticker step" data-step="0">
-          <img src="${IMG.chopsticks}" alt="箸を使う">
-          <div class="points">2点</div>
+      <div class="board-scene" style="align-self:center">
+        <div class="choice-pack step" data-step="0">
+          <div class="pill">場のつくるカード（4枚）</div>
+          <div class="card-row">
+            <div style="position:relative">
+              <img class="card-img small spend step" data-step="2" src="${IMG.chopsticks}" alt="箸を使う">
+              <div class="num-ring step" data-step="1" style="left:-5%;right:-5%;top:-3%;bottom:-3%;border-radius:12px"></div>
+            </div>
+            <img class="card-img small" src="${IMG.violin}" alt="バイオリンを弾く">
+            <img class="card-img small" src="${IMG.sauna}" alt="サウナに入る">
+            <img class="card-img small" src="${IMG.washoku}" alt="和食を作る">
+          </div>
         </div>
-        <div class="make-item sticker step" data-step="1">
-          <img src="${IMG.violin}" alt="バイオリンを弾く">
-          <div class="points">3点</div>
+        <div class="flow-arrow step" data-step="1" style="margin-top:0">
+          <div class="pill hot">1枚えらんで<br>持ってくる</div>
+          <div class="shaft"></div>
         </div>
-        <div class="make-item sticker step" data-step="1">
-          <img src="${IMG.sauna}" alt="サウナに入る">
-          <div class="points">6点</div>
+        <div class="person step" data-step="0" style="display:grid;justify-items:center;gap:8px">
+          <p class="person-name" style="margin:0">あなた</p>
+          <div class="pill hot" style="font-size:clamp(.78rem,1.5vw,1rem);line-height:1.45;text-align:center;border-radius:16px">前のターンまで ＋ 今ターンで<br>かくとくした しげん</div>
+          <div class="resource-line">
+            <img class="res spend step" data-step="3" src="${IMG.wood}" alt="木">
+            <img class="res spend step" data-step="3" src="${IMG.wood}" alt="木">
+            <img class="res spend step" data-step="3" src="${IMG.wood}" alt="木">
+            <img class="res" src="${IMG.water}" alt="水">
+          </div>
+          <div class="place-card-wrap small step" data-step="2" style="height:min(27vh,210px)">
+            <img class="card-img" src="${IMG.chopsticks}" alt="箸を使う">
+            <div class="place-slots" style="left:16%;right:16%;top:73%;bottom:4%;gap:3%">
+              <img class="drop-token step" data-step="3" src="${IMG.wood}" alt="木">
+              <img class="drop-token step" data-step="3" src="${IMG.wood}" alt="木">
+              <img class="drop-token step" data-step="3" src="${IMG.wood}" alt="木">
+            </div>
+          </div>
+          <div class="pill got step" data-step="4" style="font-size:clamp(1.1rem,2.4vw,1.5rem)">作った！</div>
         </div>
-        <div class="make-item sticker step" data-step="2">
-          <img src="${IMG.washoku}" alt="和食を作る">
-          <div class="points">5点</div>
+      </div>`
+  },
+  {
+    kicker:'ラウンドの終わり',
+    phase:'build',
+    title:'スタートプレイヤーから、順番に作る',
+    captions:[],
+    durationDelta:-2000,
+    visual:`
+      <div style="display:grid;gap:16px;justify-items:center;align-self:center;width:min(96vw,1100px)">
+        <div class="pill hot step" data-step="0" style="font-size:clamp(.95rem,1.9vw,1.25rem)">スタートプレイヤーから 時計回りに、作りたい人が作っていく</div>
+        <div style="display:flex;gap:clamp(10px,1.6vw,18px);justify-content:center;align-items:stretch;flex-wrap:wrap">
+          <div class="person step" data-step="0" style="position:relative;min-width:0;padding:12px 10px;display:grid;gap:8px;justify-items:center;align-content:start;background:var(--yellow-soft)">
+            <div class="turn-badge">①</div>
+            <div class="start-marker">
+              <img src="${IMG.startPlayer}" alt="スタートプレイヤーカード">
+              <div class="start-label">スタート<br>プレイヤー</div>
+            </div>
+            <p class="person-name" style="margin:0;font-size:1rem">あなた</p>
+            <div class="card-pad" style="min-height:130px;min-width:104px;padding:8px">
+              <img class="card-img step" data-step="1" style="width:clamp(58px,7.2vw,84px)" src="${IMG.chopsticks}" alt="箸を使う">
+            </div>
+            <div class="pill got step" data-step="1">作った！</div>
+          </div>
+          <div class="person step" data-step="0" style="position:relative;min-width:0;padding:12px 10px;display:grid;gap:8px;justify-items:center;align-content:start">
+            <div class="turn-badge">②</div>
+            <p class="person-name" style="margin:0;font-size:1rem">みさき</p>
+            <div class="card-pad" style="min-height:130px;min-width:104px;padding:8px">
+              <img class="card-img step" data-step="2" style="width:clamp(58px,7.2vw,84px)" src="${IMG.violin}" alt="バイオリンを弾く">
+              <img class="card-img step" data-step="2" style="width:clamp(58px,7.2vw,84px)" src="${IMG.sauna}" alt="サウナに入る">
+            </div>
+            <div class="pill got step" data-step="2">2枚 作った！</div>
+            <div class="pill hot step" data-step="2" style="font-size:clamp(.72rem,1.4vw,.92rem);line-height:1.4;text-align:center;border-radius:14px">しげんが足りれば<br>何枚でも作れる！</div>
+          </div>
+          <div class="person step" data-step="0" style="position:relative;min-width:0;padding:12px 10px;display:grid;gap:8px;justify-items:center;align-content:start">
+            <div class="turn-badge">③</div>
+            <p class="person-name" style="margin:0;font-size:1rem">けん</p>
+            <div class="card-pad" style="min-height:130px;min-width:104px;padding:8px">
+              <div class="step" data-step="3" style="font-weight:900;color:var(--ink)">作らない</div>
+            </div>
+            <div class="pill step" data-step="3" style="font-size:clamp(.72rem,1.4vw,.92rem)">パスしてもOK</div>
+          </div>
+          <div class="person step" data-step="0" style="position:relative;min-width:0;padding:12px 10px;display:grid;gap:8px;justify-items:center;align-content:start">
+            <div class="turn-badge">④</div>
+            <p class="person-name" style="margin:0;font-size:1rem">ゆい</p>
+            <div class="card-pad" style="min-height:130px;min-width:104px;padding:8px">
+              <img class="card-img step" data-step="4" style="width:clamp(58px,7.2vw,84px)" src="${IMG.washoku}" alt="和食を作る">
+            </div>
+            <div class="pill got step" data-step="4">作った！</div>
+          </div>
         </div>
       </div>`
   },
@@ -1839,8 +1973,8 @@ const SCENES = [
           </div>
           <div class="arrow step" data-step="3">→</div>
           <div class="loop-step step" data-step="4">
-            <img class="state-tile mini" src="${IMG.healthyState}" alt="森の状態">
-            <div class="pill">⑤森をチェック</div>
+            <img class="card-img small" src="${IMG.startPlayer}" alt="スタートプレイヤーカード">
+            <div class="pill">⑤スタートプレイヤーを反時計回りとなりの人に移動</div>
           </div>
         </div>
         <div class="pill hot step" data-step="5" style="font-size:clamp(1.25rem,3vw,2.05rem);padding:15px 28px">これを <span style="font-size:1.4em;color:var(--red)">6</span>ラウンド くりかえす</div>
@@ -1996,17 +2130,19 @@ function showSlide(index){
   const capEls = Array.from(el.querySelectorAll('.caption'));
   schedule = [];
   let maxStep = 0;
+  // stepGap指定があるシーンは、ステップ間の間隔をそのミリ秒に変えられる
+  const gap = scene.stepGap != null ? scene.stepGap : LINE_GAP;
   stepEls.forEach(item => {
     const step = Number(item.dataset.step || 0);
     maxStep = Math.max(maxStep, step);
     const countTo = item.dataset.countTo != null ? Number(item.dataset.countTo) : null;
-    schedule.push({ time: STEP_BASE + step * LINE_GAP, el: item, shown:false, countTo });
+    schedule.push({ time: STEP_BASE + step * gap, el: item, shown:false, countTo });
   });
   capEls.forEach((item, i) => {
-    schedule.push({ time: CAP_BASE + i * LINE_GAP, el: item, shown:false, countTo:null });
+    schedule.push({ time: CAP_BASE + i * gap, el: item, shown:false, countTo:null });
   });
   const last = Math.max(maxStep, capEls.length - 1);
-  duration = scene.duration != null ? scene.duration : 600 + (last + 1) * LINE_GAP + HOLD_AFTER;
+  duration = scene.duration != null ? scene.duration : 600 + (last + 1) * gap + HOLD_AFTER + (scene.durationDelta || 0);
   elapsed = 0;
   if(playing){
     bar.style.width = '0%';
